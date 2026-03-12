@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IconForge AI — AI Icon Generator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a2e;--surface3:#22223a;
+  --border:#2a2a4a;--text:#e8e8f0;--text2:#9898b8;--text3:#6868a0;
+  --accent:#7c3aed;--accent2:#a855f7;--accent3:#c084fc;
+  --glow:rgba(124,58,237,.3);--glow2:rgba(168,85,247,.2);
+  --success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+  --radius:12px;--radius2:16px;--radius3:24px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+::selection{background:var(--accent);color:#fff}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,.8);backdrop-filter:blur(20px);border-bottom:1px solid rgba(42,42,74,.3)}
+.logo{display:flex;align-items:center;gap:10px;font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo svg{width:32px;height:32px}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{color:var(--text2);text-decoration:none;font-size:.9rem;transition:.3s}
+.nav-links a:hover{color:var(--accent3)}
+.nav-badge{background:linear-gradient(135deg,var(--accent),#ec4899);color:#fff;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;margin-left:6px}
+
+/* HERO */
+.hero{padding:120px 32px 60px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,var(--glow) 0%,transparent 70%);pointer-events:none;opacity:.5}
+.hero h1{font-size:3.5rem;font-weight:900;line-height:1.1;margin-bottom:16px;position:relative}
+.hero h1 span{background:linear-gradient(135deg,var(--accent),#ec4899,var(--warning));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:1.15rem;color:var(--text2);max-width:600px;margin:0 auto 32px;line-height:1.6}
+.hero-stats{display:flex;gap:40px;justify-content:center;margin-top:24px}
+.hero-stats .stat{text-align:center}
+.hero-stats .stat-num{font-size:1.5rem;font-weight:800;color:var(--accent3)}
+.hero-stats .stat-label{font-size:.8rem;color:var(--text3);margin-top:4px}
+
+/* MAIN CONTAINER */
+.main-container{max-width:1400px;margin:0 auto;padding:0 32px 80px}
+.section-title{font-size:1.6rem;font-weight:700;margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.section-title .num{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700}
+
+/* GENERATOR LAYOUT */
+.generator{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:20px}
+@media(max-width:968px){.generator{grid-template-columns:1fr}}
+
+/* PANELS */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:28px;position:relative;overflow:hidden}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.panel-title{font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.panel-title svg{width:20px;height:20px;color:var(--accent3)}
+
+/* CATEGORY GRID */
+.categories{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:28px}
+.cat-card{background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius);padding:14px 10px;text-align:center;cursor:pointer;transition:.3s;position:relative;overflow:hidden}
+.cat-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,58,237,.15)}
+.cat-card.active{border-color:var(--accent);background:rgba(124,58,237,.1)}
+.cat-card.active::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent)}
+.cat-icon{font-size:1.8rem;margin-bottom:6px;display:block}
+.cat-name{font-size:.8rem;font-weight:600;color:var(--text)}
+.cat-card.active .cat-name{color:var(--accent3)}
+
+/* FORM ELEMENTS */
+.form-group{margin-bottom:20px}
+.form-label{font-size:.85rem;font-weight:600;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.form-label .opt{color:var(--text3);font-weight:400;font-size:.75rem}
+.prompt-input{width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius);padding:14px 16px;color:var(--text);font-size:1rem;outline:none;transition:.3s;resize:none;font-family:inherit}
+.prompt-input:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--glow2)}
+.prompt-input::placeholder{color:var(--text3)}
+textarea.prompt-input{min-height:80px}
+
+/* SUGGESTIONS */
+.suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.suggestion{background:var(--surface3);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.75rem;color:var(--text2);cursor:pointer;transition:.2s}
+.suggestion:hover{border-color:var(--accent);color:var(--accent3);background:rgba(124,58,237,.1)}
+
+/* REFERENCE UPLOAD */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;transition:.3s;position:relative}
+.upload-zone:hover{border-color:var(--accent);background:rgba(124,58,237,.05)}
+.upload-zone.has-file{border-style:solid;border-color:var(--success)}
+.upload-zone svg{width:36px;height:36px;color:var(--text3);margin-bottom:8px}
+.upload-zone p{font-size:.85rem;color:var(--text3)}
+.upload-zone .upload-hint{font-size:.75rem;color:var(--text3);margin-top:4px;opacity:.7}
+.upload-preview{max-width:120px;max-height:120px;border-radius:8px;margin-top:10px;border:2px solid var(--accent)}
+.remove-ref{position:absolute;top:8px;right:8px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center}
+
+/* OPTIONS ROW */
+.options-row{display:flex;gap:12px;flex-wrap:wrap}
+.option-group{flex:1;min-width:140px}
+.option-select{width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-size:.9rem;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239898b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.option-select:focus{border-color:var(--accent)}
+.option-select option{background:var(--surface);color:var(--text)}
+
+/* PACK SIZE */
+.pack-selector{display:flex;gap:8px;margin-top:8px}
+.pack-btn{background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius);padding:8px 16px;color:var(--text2);cursor:pointer;transition:.3s;font-size:.85rem;font-weight:600}
+.pack-btn:hover{border-color:var(--accent)}
+.pack-btn.active{border-color:var(--accent);background:rgba(124,58,237,.15);color:var(--accent3)}
+
+/* GENERATE BUTTON */
+.generate-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),#9333ea,#ec4899);border:none;border-radius:var(--radius);color:#fff;font-size:1.05rem;font-weight:700;cursor:pointer;transition:.3s;position:relative;overflow:hidden;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px}
+.generate-btn:hover{transform:translateY(-2px);box-shadow:0 8px 40px rgba(124,58,237,.4)}
+.generate-btn:active{transform:translateY(0)}
+.generate-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.generate-btn::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent,rgba(255,255,255,.1),transparent);transform:rotate(45deg);transition:.5s}
+.generate-btn:hover::before{left:100%}
+.btn-icon{font-size:1.2rem}
+
+/* LOADING */
+.loading-overlay{display:none;position:absolute;inset:0;background:rgba(10,10,15,.95);z-index:10;flex-direction:column;align-items:center;justify-content:center;gap:20px;border-radius:var(--radius2)}
+.loading-overlay.show{display:flex}
+.loader{width:60px;height:60px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:var(--text2);font-size:.9rem;text-align:center}
+.loading-step{color:var(--accent3);font-weight:600;font-size:.85rem;margin-top:4px}
+.progress-bar{width:200px;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:2px;transition:width .3s;width:0%}
+
+/* OUTPUT PANEL */
+.output-panel{display:flex;flex-direction:column}
+.output-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;color:var(--text3);text-align:center;gap:12px}
+.output-placeholder svg{width:64px;height:64px;opacity:.3}
+.output-placeholder p{font-size:.95rem}
+
+/* GENERATED ICONS GRID */
+.icons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px;margin-top:16px}
+.icon-card{background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;position:relative;transition:.3s;cursor:pointer}
+.icon-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,58,237,.15)}
+.icon-card canvas,.icon-card img{width:100%;aspect-ratio:1;border-radius:8px;background:repeating-conic-gradient(var(--surface3) 0% 25%, var(--surface2) 0% 50%) 50%/16px 16px;image-rendering:auto}
+.icon-card .icon-label{font-size:.75rem;color:var(--text2);margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-actions{display:flex;gap:6px;margin-top:10px;justify-content:center}
+.icon-action-btn{background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text2);cursor:pointer;transition:.2s;font-size:.7rem;display:flex;align-items:center;gap:4px}
+.icon-action-btn:hover{border-color:var(--accent);color:var(--accent3)}
+.icon-action-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.icon-action-btn.primary:hover{background:var(--accent2)}
+
+/* DOWNLOAD ALL BAR */
+.download-bar{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-top:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.download-bar.show{display:flex}
+.download-info{font-size:.9rem;color:var(--text2)}
+.download-info strong{color:var(--text)}
+.download-all-btn{background:linear-gradient(135deg,var(--success),#059669);border:none;border-radius:var(--radius);padding:10px 24px;color:#fff;font-weight:700;cursor:pointer;transition:.3s;font-size:.9rem}
+.download-all-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(16,185,129,.3)}
+
+/* HISTORY */
+.history-section{margin-top:60px}
+.history-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:16px}
+.history-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:.3s}
+.history-item:hover{border-color:var(--accent);transform:translateY(-2px)}
+.history-icons{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:10px}
+.history-icons img{width:100%;aspect-ratio:1;border-radius:4px;background:var(--surface2)}
+.history-meta{font-size:.8rem;color:var(--text3)}
+.history-meta .cat-tag{background:var(--surface3);padding:2px 8px;border-radius:10px;font-size:.7rem;color:var(--accent3)}
+
+/* COLOR PALETTE */
+.color-palette{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.color-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.2s;position:relative}
+.color-swatch:hover{transform:scale(1.15)}
+.color-swatch.active{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+.color-swatch.custom{background:conic-gradient(red,yellow,lime,aqua,blue,magenta,red);position:relative}
+
+/* STYLE TOGGLE */
+.style-toggles{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.style-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:.78rem;color:var(--text2);cursor:pointer;transition:.2s}
+.style-toggle:hover{border-color:var(--accent)}
+.style-toggle.active{background:rgba(124,58,237,.15);border-color:var(--accent);color:var(--accent3)}
+
+/* FOOTER */
+footer{text-align:center;padding:40px 32px;border-top:1px solid var(--border);color:var(--text3);font-size:.85rem}
+footer a{color:var(--accent3);text-decoration:none}
+
+/* TOAST */
+.toast{position:fixed;bottom:30px;right:30px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;color:var(--text);font-size:.9rem;z-index:9999;transform:translateY(100px);opacity:0;transition:.4s;display:flex;align-items:center;gap:10px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:var(--success)}
+.toast.success::before{content:'✓';color:var(--success);font-weight:700;font-size:1.1rem}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .hero h1{font-size:2.2rem}
+  .hero p{font-size:1rem}
+  .categories{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
+  nav{padding:12px 16px}
+  .main-container{padding:0 16px 60px}
+  .panel{padding:20px}
+  .hero-stats{gap:24px}
+  .options-row{flex-direction:column}
+}
+
+/* ANIMATIONS */
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.fade-in{animation:fadeIn .5s ease forwards}
+.stagger-1{animation-delay:.1s;opacity:0}
+.stagger-2{animation-delay:.2s;opacity:0}
+.stagger-3{animation-delay:.3s;opacity:0}
+.stagger-4{animation-delay:.4s;opacity:0}
+
+/* Checkerboard for transparency */
+.checker-bg{background-image:repeating-conic-gradient(rgba(255,255,255,.05) 0% 25%,transparent 0% 50%);background-size:16px 16px}
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <div class="logo">
+    <svg viewBox="0 0 32 32" fill="none"><rect x="2" y="2" width="28" height="28" rx="8" fill="url(#lg1)" /><path d="M10 16l4-6 4 6-4 6z" fill="#fff" opacity=".9"/><path d="M16 10l4 6h-8z" fill="#fff" opacity=".6"/><defs><linearGradient id="lg1" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
+    IconForge AI
+  </div>
+  <div class="nav-links">
+    <a href="#generator">Oluşturucu</a>
+    <a href="#history">Geçmiş</a>
+    <a href="#">API<span class="nav-badge">YAKINDA</span></a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <h1 class="fade-in">AI ile <span>İkon Üret</span><br>Saniyeler İçinde</h1>
+  <p class="fade-in stagger-1">Prompt yaz, kategori seç, tek tıkla profesyonel ikonlar oluştur. Transparent PNG, paket desteği ve stil tutarlılığı ile.</p>
+  <div class="hero-stats fade-in stagger-2">
+    <div class="stat"><div class="stat-num">10+</div><div class="stat-label">Kategori</div></div>
+    <div class="stat"><div class="stat-num">30+</div><div class="stat-label">İkon Şekli</div></div>
+    <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Olasılık</div></div>
+  </div>
+</section>
+
+<!-- MAIN GENERATOR -->
+<div class="main-container" id="generator">
+  <div class="generator">
+
+    <!-- LEFT: CONTROLS -->
+    <div class="controls-column">
+
+      <!-- STEP 1: CATEGORY -->
+      <div class="panel fade-in stagger-1">
+        <div class="panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span class="num">1</span> Kategori Seç
+        </div>
+        <div class="categories" id="categoryGrid"></div>
+      </div>
+
+      <!-- STEP 2: PROMPT -->
+      <div class="panel fade-in stagger-2">
+        <div class="panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <span class="num">2</span> İkon Tanımla
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prompt / Açıklama</label>
+          <textarea class="prompt-input" id="promptInput" placeholder="Örn: magic crystal sword, golden shield, neon rocket..." rows="3"></textarea>
+          <div class="suggestions" id="suggestions"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Referans Görsel <span class="opt">(opsiyonel)</span></label>
+          <div class="upload-zone" id="uploadZone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <p>Sürükle & Bırak veya <strong>Tıkla</strong></p>
+            <span class="upload-hint">PNG, JPG, WEBP — Max 5MB</span>
+            <input type="file" id="fileInput" accept="image/*" hidden>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: OPTIONS -->
+      <div class="panel fade-in stagger-3">
+        <div class="panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <span class="num">3</span> Ayarlar
+        </div>
+        <div class="options-row">
+          <div class="option-group">
+            <label class="form-label">Boyut</label>
+            <select class="option-select" id="sizeSelect">
+              <option value="64">64 × 64</option>
+              <option value="128" selected>128 × 128</option>
+              <option value="256">256 × 256</option>
+              <option value="512">512 × 512</option>
+              <option value="1024">1024 × 1024</option>
+            </select>
+          </div>
+          <div class="option-group">
+            <label class="form-label">Format</label>
+            <select class="option-select" id="formatSelect">
+              <option value="png">PNG (Transparent)</option>
+              <option value="svg">SVG Vektör</option>
+              <option value="ico">ICO Favicon</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:16px">
+          <label class="form-label">Paket Adedi</label>
+          <div class="pack-selector" id="packSelector">
+            <div class="pack-btn active" data-count="1">1 İkon</div>
+            <div class="pack-btn" data-count="4">4'lü Paket</div>
+            <div class="pack-btn" data-count="6">6'lı Paket</div>
+            <div class="pack-btn" data-count="9">9'lu Paket</div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:16px">
+          <label class="form-label">Renk Paleti</label>
+          <div class="color-palette" id="colorPalette"></div>
+        </div>
+
+        <div class="form-group" style="margin-top:16px">
+          <label class="form-label">Ek Stiller</label>
+          <div class="style-toggles" id="styleToggles">
+            <div class="style-toggle" data-style="glow">✨ Glow</div>
+            <div class="style-toggle" data-style="outline">🔲 Outline</div>
+            <div class="style-toggle" data-style="shadow">🌑 Shadow</div>
+            <div class="style-toggle" data-style="rounded">⭕ Rounded</div>
+            <div class="style-toggle" data-style="gradient">🌈 Gradient</div>
+            <div class="style-toggle" data-style="3d">🎲 3D Effect</div>
+          </div>
+        </div>
+
+        <!-- GENERATE BUTTON -->
+        <button class="generate-btn" id="generateBtn" onclick="generateIcons()">
+          <span class="btn-icon">⚡</span> İkon Oluştur
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT: OUTPUT -->
+    <div class="panel output-panel" id="outputPanel">
+      <div class="panel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg>
+        Sonuç
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+        <div class="loading-text">AI ikon üretiyor...</div>
+        <div class="loading-step" id="loadingStep">Prompt analiz ediliyor...</div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+
+      <!-- Placeholder -->
+      <div class="output-placeholder" id="outputPlaceholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <p>Prompt gir ve <strong>"İkon Oluştur"</strong> butonuna tıkla</p>
+        <span style="font-size:.8rem;color:var(--text3)">Oluşturulan ikonlar burada görünecek</span>
+      </div>
+
+      <!-- Generated Output -->
+      <div id="outputContent" style="display:none">
+        <div class="icons-grid" id="iconsGrid"></div>
+        <div class="download-bar" id="downloadBar">
+          <div class="download-info">
+            <strong id="iconCount">0</strong> ikon oluşturuldu • <strong id="iconSize">128×128</strong> px
+          </div>
+          <button class="download-all-btn" onclick="downloadAll()">📦 Tümünü İndir (ZIP)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <section class="history-section" id="history">
+    <div class="section-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent3)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Geçmiş Üretimler
+    </div>
+    <div class="history-grid" id="historyGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);font-size:.9rem">
+        Henüz ikon üretilmedi. İlk ikonunu oluştur! ✨
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>IconForge AI © 2025 — AI-Powered Icon Generator</p>
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== CONFIG ====================
+const CATEGORIES = [
+  {id:'fantasy',name:'Fantasy',icon:'🏰',colors:['#8B5CF6','#D946EF','#F59E0B','#7C3AED','#A855F7'],desc:'Büyülü, fantastik'},
+  {id:'scifi',name:'Sci-fi',icon:'🚀',colors:['#06B6D4','#3B82F6','#8B5CF6','#0EA5E9','#6366F1'],desc:'Fütüristik, teknolojik'},
+  {id:'cartoon',name:'Cartoon',icon:'🎨',colors:['#EF4444','#F59E0B','#10B981','#3B82F6','#EC4899'],desc:'Eğlenceli, renkli'},
+  {id:'minimal',name:'Minimal',icon:'⬜',colors:['#E5E7EB','#9CA3AF','#6B7280','#374151','#F9FAFB'],desc:'Sade, şık'},
+  {id:'modernui',name:'Modern UI',icon:'📱',colors:['#6366F1','#8B5CF6','#EC4899','#F43F5E','#A855F7'],desc:'App & Web UI'},
+  {id:'pixel',name:'Pixel Art',icon:'👾',colors:['#EF4444','#F59E0B','#10B981','#3B82F6','#8B5CF6'],desc:'Retro piksel'},
+  {id:'gradient',name:'Gradient',icon:'🌈',colors:['#F43F5E','#EC4899','#8B5CF6','#6366F1','#3B82F6'],desc:'Gradient dolgulu'},
+  {id:'flat',name:'Flat',icon:'🔷',colors:['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6'],desc:'Düz renkler'},
+  {id:'neon',name:'Neon',icon:'💡',colors:['#00FF87','#FF00FF','#00FFFF','#FF6B00','#FFE500'],desc:'Neon ışıklı'},
+  {id:'watercolor',name:'Watercolor',icon:'🎭',colors:['#FDA4AF','#A5B4FC','#86EFAC','#FCD34D','#C4B5FD'],desc:'Suluboya efekti'},
+  {id:'isometric',name:'Isometric',icon:'🔶',colors:['#6366F1','#818CF8','#A5B4FC','#C7D2FE','#4F46E5'],desc:'3D izometrik'},
+  {id:'line',name:'Line Art',icon:'✏️',colors:['#F8FAFC','#CBD5E1','#94A3B8','#64748B','#E2E8F0'],desc:'Çizgi sanatı'}
+];
+
+const SHAPES = ['star','heart','shield','sword','crown','gem','lightning','fire','moon','sun','leaf',
+  'mountain','gear','rocket','eye','key','lock','skull','arrow','potion','crystal','wave','cloud',
+  'bell','home','user','chat','music','camera','book','compass','ring','wand','dragon','castle','orb'];
+
+const PROMPT_SUGGESTIONS = {
+  fantasy:['magic sword','golden shield','crystal gem','dragon eye','enchanted crown','mystic potion','spell book'],
+  scifi:['laser gun','space helmet','circuit board','alien eye','quantum core','cyber lock','holo screen'],
+  cartoon:['happy star','cute heart','funny skull','bouncy ball','smiling sun','cloud friend','magic wand'],
+  minimal:['arrow icon','circle badge','square frame','line star','dot pattern','simple lock','basic home'],
+  modernui:['settings gear','notification bell','user avatar','chat bubble','camera icon','search lens','bookmark'],
+  pixel:['pixel sword','8bit heart','retro rocket','pixel crown','game potion','pixel skull','coin'],
+  gradient:['gradient orb','sunset circle','rainbow star','aurora heart','prism gem','neon ring','flow wave'],
+  flat:['flat shield','solid star','block arrow','fill heart','flat leaf','color sun','badge icon'],
+  neon:['neon lightning','glow star','cyber heart','neon eye','electric bolt','light ring','laser beam'],
+  watercolor:['soft flower','watercolor leaf','paint moon','brush sun','pastel cloud','water wave','gentle heart'],
+  isometric:['cube','iso box','3d crystal','block tower','iso gem','stack','iso arrow'],
+  line:['line star','sketch heart','draw moon','outline sun','wire gear','pen arrow','trace leaf']
+};
+
+// ==================== STATE ====================
+let state = {
+  category: 'fantasy',
+  prompt: '',
+  referenceImg: null,
+  size: 128,
+  format: 'png',
+  packCount: 1,
+  customColor: null,
+  styles: new Set(),
+  generatedIcons: [],
+  history: JSON.parse(localStorage.getItem('iconforge_history')||'[]')
+};
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  renderCategories();
+  renderColorPalette();
+  updateSuggestions();
+  renderHistory();
+  setupUpload();
+  setupPackSelector();
+  setupStyleToggles();
+  setupInputListeners();
+});
+
+function renderCategories() {
+  const grid = document.getElementById('categoryGrid');
+  grid.innerHTML = CATEGORIES.map(c => `
+    <div class="cat-card ${c.id === state.category ? 'active' : ''}" data-id="${c.id}" onclick="selectCategory('${c.id}')">
+      <span class="cat-icon">${c.icon}</span>
+      <div class="cat-name">${c.name}</div>
+    </div>
+  `).join('');
+}
+
+function selectCategory(id) {
+  state.category = id;
+  document.querySelectorAll('.cat-card').forEach(c => c.classList.toggle('active', c.dataset.id === id));
+  renderColorPalette();
+  updateSuggestions();
+}
+
+function renderColorPalette() {
+  const cat = CATEGORIES.find(c => c.id === state.category);
+  const palette = document.getElementById('colorPalette');
+  const defaultColors = ['#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#FFEAA7','#DDA0DD','#FF8C69','#87CEEB'];
+  const allColors = [...new Set([...cat.colors, ...defaultColors])];
+  palette.innerHTML = allColors.map((c,i) => `
+    <div class="color-swatch ${i===0?'active':''}" style="background:${c}" data-color="${c}" onclick="selectColor(this,'${c}')" title="${c}"></div>
+  `).join('') + `<div class="color-swatch custom" onclick="pickCustomColor()" title="Özel renk"><input type="color" id="customColorPicker" style="opacity:0;width:100%;height:100%;cursor:pointer;position:absolute;top:0;left:0" onchange="applyCustomColor(this.value)"></div>`;
+  state.customColor = cat.colors[0];
+}
+
+function selectColor(el, color) {
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  state.customColor = color;
+}
+
+function pickCustomColor() { document.getElementById('customColorPicker').click(); }
+function applyCustomColor(c) {
+  state.customColor = c;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+}
+
+function updateSuggestions() {
+  const el = document.getElementById('suggestions');
+  const sugs = PROMPT_SUGGESTIONS[state.category] || PROMPT_SUGGESTIONS.fantasy;
+  el.innerHTML = sugs.map(s => `<span class="suggestion" onclick="useSuggestion('${s}')">${s}</span>`).join('');
+}
+
+function useSuggestion(s) {
+  document.getElementById('promptInput').value = s;
+  state.prompt = s;
+}
+
+function setupUpload() {
+  const zone = document.getElementById('uploadZone');
+  const input = document.getElementById('fileInput');
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--accent)'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.style.borderColor = '';
+    if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+  input.addEventListener('change', e => { if(e.target.files.length) handleFile(e.target.files[0]); });
+}
+
+function handleFile(file) {
+  if(!file.type.startsWith('image/')) return showToast('Lütfen bir görsel dosyası seçin');
+  if(file.size > 5*1024*1024) return showToast('Dosya 5MB\'dan küçük olmalı');
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.referenceImg = e.target.result;
+    const zone = document.getElementById('uploadZone');
+    zone.classList.add('has-file');
+    zone.innerHTML = `<img src="${e.target.result}" class="upload-preview"><p style="font-size:.8rem;color:var(--success);margin-top:8px">✓ Referans yüklendi</p><button class="remove-ref" onclick="removeRef(event)">✕</button>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeRef(e) {
+  e.stopPropagation();
+  state.referenceImg = null;
+  const zone = document.getElementById('uploadZone');
+  zone.classList.remove('has-file');
+  zone.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><p>Sürükle & Bırak veya <strong>Tıkla</strong></p><span class="upload-hint">PNG, JPG, WEBP — Max 5MB</span>`;
+  document.getElementById('fileInput').value = '';
+}
+
+function setupPackSelector() {
+  document.querySelectorAll('.pack-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.pack-btn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      state.packCount = parseInt(b.dataset.count);
+    });
+  });
+}
+
+function setupStyleToggles() {
+  document.querySelectorAll('.style-toggle').forEach(t => {
+    t.addEventListener('click', () => {
+      t.classList.toggle('active');
+      const s = t.dataset.style;
+      state.styles.has(s) ? state.styles.delete(s) : state.styles.add(s);
+    });
+  });
+}
+
+function setupInputListeners() {
+  document.getElementById('promptInput').addEventListener('input', e => state.prompt = e.target.value);
+  document.getElementById('sizeSelect').addEventListener('change', e => state.size = parseInt(e.target.value));
+  document.getElementById('formatSelect').addEventListener('change', e => state.format = e.target.value);
+}
+
+// ==================== ICON GENERATION ENGINE ====================
+
+function hashStr(str) {
+  let h = 0;
+  for(let i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
+  return Math.abs(h);
+}
+
+function seededRandom(seed) {
+  let s = seed;
+  return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return {r,g,b};
+}
+
+function detectShape(prompt) {
+  const p = prompt.toLowerCase();
+  const keywords = {
+    star:['star','yıldız','asterisk'],heart:['heart','kalp','love','aşk'],
+    shield:['shield','kalkan','protect','badge','rozet'],sword:['sword','kılıç','blade','bıçak'],
+    crown:['crown','taç','king','kral','queen','kraliçe'],gem:['gem','diamond','elmas','jewel','mücevher'],
+    lightning:['lightning','bolt','yıldırım','electric','elektrik','şimşek'],
+    fire:['fire','flame','ateş','alev','burn'],moon:['moon','ay','crescent','hilal'],
+    sun:['sun','güneş','solar'],leaf:['leaf','yaprak','plant','bitki','tree','ağaç','nature','doğa'],
+    mountain:['mountain','dağ','peak','hill','tepe'],gear:['gear','settings','ayar','cog','dişli'],
+    rocket:['rocket','roket','space','uzay','launch'],eye:['eye','göz','vision','see','watch'],
+    key:['key','anahtar'],lock:['lock','kilit','secure','güvenli'],
+    skull:['skull','kafatası','skeleton','iskelet','bone'],
+    arrow:['arrow','ok','direction','yön','pointer'],
+    potion:['potion','iksir','bottle','şişe','elixir'],
+    crystal:['crystal','kristal','prism','prizm'],wave:['wave','dalga','water','su','ocean','deniz'],
+    cloud:['cloud','bulut','weather','hava'],bell:['bell','zil','notification','bildirim'],
+    home:['home','ev','house'],user:['user','kullanıcı','person','kişi','avatar','profil'],
+    chat:['chat','sohbet','message','mesaj','bubble','balon'],
+    music:['music','müzik','note','nota','melody'],camera:['camera','kamera','photo','fotoğraf'],
+    book:['book','kitap','page','sayfa','read'],compass:['compass','pusula','navigate','yön'],
+    ring:['ring','yüzük','circle','daire','hoop'],wand:['wand','asa','magic','büyü','sihir'],
+    dragon:['dragon','ejderha','drake'],castle:['castle','kale','fortress','hisar','tower','kule'],
+    orb:['orb','küre','sphere','globe','dünya']
+  };
+  for(const [shape, kws] of Object.entries(keywords)) {
+    if(kws.some(k => p.includes(k))) return shape;
+  }
+  return 'abstract';
+}
+
+function getCatConfig(catId) {
+  return CATEGORIES.find(c => c.id === catId) || CATEGORIES[0];
+}
+
+// ==================== DRAW SHAPES ====================
+
+function drawIcon(ctx, shape, S, colors, seed, styles, catId) {
+  const rng = seededRandom(seed);
+  const cx = S/2, cy = S/2, r = S*0.35;
+  const c1 = colors[0], c2 = colors[1] || colors[0], c3 = colors[2] || colors[0];
+  const rgb1 = hexToRgb(c1);
+
+  ctx.clearRect(0,0,S,S);
+  ctx.save();
+
+  // Background shape for rounded style
+  if(styles.has('rounded')) {
+    const pad = S*0.08;
+    const rr = S*0.2;
+    ctx.beginPath();
+    ctx.roundRect(pad, pad, S-pad*2, S-pad*2, rr);
+    ctx.fillStyle = `rgba(${rgb1.r},${rgb1.g},${rgb1.b},0.1)`;
+    ctx.fill();
+  }
+
+  // Create gradient for fills
+  const grad = ctx.createLinearGradient(cx-r, cy-r, cx+r, cy+r);
+  grad.addColorStop(0, c1);
+  grad.addColorStop(1, c2);
+
+  const radGrad = ctx.createRadialGradient(cx, cy*0.8, 0, cx, cy, r*1.2);
+  radGrad.addColorStop(0, c1);
+  radGrad.addColorStop(1, c2);
+
+  const useGradient = styles.has('gradient') || catId === 'gradient';
+  const fillColor = useGradient ? grad : c1;
+
+  // Glow effect
+  if(styles.has('glow') || catId === 'neon' || catId === 'fantasy') {
+    ctx.shadowColor = c1;
+    ctx.shadowBlur = S*0.08;
+  }
+
+  // Shadow effect
+  if(styles.has('shadow')) {
+    ctx.shadowColor = 'rgba(0,0,0,0.4)';
+    ctx.shadowOffsetX = S*0.02;
+    ctx.shadowOffsetY = S*0.04;
+    ctx.shadowBlur = S*0.06;
+  }
+
+  // 3D effect base
+  if(styles.has('3d')) {
+    ctx.save();
+    ctx.translate(S*0.015, S*0.03);
+    ctx.globalAlpha = 0.3;
+    drawShapePath(ctx, shape, cx, cy, r*0.95, S, rng, seed);
+    ctx.fillStyle = '#000';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Line art specific
+  const isLineArt = catId === 'line';
+  const isPixel = catId === 'pixel';
+  const isWatercolor = catId === 'watercolor';
+
+  // Set line width for outlined styles
+  ctx.lineWidth = styles.has('outline') || isLineArt ? Math.max(2, S*0.02) : Math.max(1, S*0.01);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Draw the main shape
+  drawShapePath(ctx, shape, cx, cy, r, S, rng, seed);
+
+  if(isLineArt) {
+    ctx.strokeStyle = c1;
+    ctx.lineWidth = Math.max(2, S*0.025);
+    ctx.stroke();
+  } else if(isWatercolor) {
+    ctx.fillStyle = fillColor;
+    ctx.globalAlpha = 0.6;
+    ctx.fill();
+    ctx.globalAlpha = 0.3;
+    ctx.filter = `blur(${S*0.02}px)`;
+    ctx.fill();
+    ctx.filter = 'none';
+    ctx.globalAlpha = 1;
+  } else {
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    if(styles.has('outline') || catId === 'cartoon') {
+      ctx.strokeStyle = catId === 'cartoon' ? '#1a1a2e' : c2;
+      ctx.lineWidth = catId === 'cartoon' ? Math.max(3, S*0.035) : Math.max(1, S*0.015);
+      ctx.stroke();
+    }
+  }
+
+  // Pixel art post-process
+  if(isPixel) {
+    pixelate(ctx, S, Math.max(4, Math.floor(S/16)));
+  }
+
+  // Neon double glow
+  if(catId === 'neon') {
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    ctx.shadowColor = c1;
+    ctx.shadowBlur = S*0.15;
+    drawShapePath(ctx, shape, cx, cy, r, S, rng, seed);
+    ctx.strokeStyle = c1;
+    ctx.lineWidth = Math.max(1, S*0.01);
+    ctx.globalAlpha = 0.5;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Highlight
+  if(!isLineArt && !isPixel && catId !== 'minimal' && catId !== 'flat') {
+    ctx.save();
+    ctx.globalCompositeOperation = 'overlay';
+    ctx.globalAlpha = 0.15;
+    const hlGrad = ctx.createLinearGradient(cx-r, cy-r, cx+r, cy+r);
+    hlGrad.addColorStop(0, '#ffffff');
+    hlGrad.addColorStop(0.5, 'transparent');
+    hlGrad.addColorStop(1, '#000000');
+    drawShapePath(ctx, shape, cx, cy, r, S, rng, seed);
+    ctx.fillStyle = hlGrad;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+function drawShapePath(ctx, shape, cx, cy, r, S, rng, seed) {
+  ctx.beginPath();
+  switch(shape) {
+    case 'star': drawStar(ctx,cx,cy,r,5); break;
+    case 'heart': drawHeart(ctx,cx,cy,r); break;
+    case 'shield': drawShield(ctx,cx,cy,r); break;
+    case 'sword': drawSword(ctx,cx,cy,r,S); break;
+    case 'crown': drawCrown(ctx,cx,cy,r); break;
+    case 'gem': drawGem(ctx,cx,cy,r); break;
+    case 'lightning': drawLightning(ctx,cx,cy,r,S); break;
+    case 'fire': drawFire(ctx,cx,cy,r); break;
+    case 'moon': drawMoon(ctx,cx,cy,r); break;
+    case 'sun': drawSun(ctx,cx,cy,r); break;
+    case 'leaf': drawLeaf(ctx,cx,cy,r); break;
+    case 'mountain': drawMountain(ctx,cx,cy,r); break;
+    case 'gear': drawGear(ctx,cx,cy,r); break;
+    case 'rocket': drawRocket(ctx,cx,cy,r,S); break;
+    case 'eye': drawEye(ctx,cx,cy,r); break;
+    case 'key': drawKey(ctx,cx,cy,r,S); break;
+    case 'lock': drawLock(ctx,cx,cy,r,S); break;
+    case 'skull': drawSkull(ctx,cx,cy,r); break;
+    case 'arrow': drawArrow(ctx,cx,cy,r,S); break;
+    case 'potion': drawPotion(ctx,cx,cy,r,S); break;
+    case 'crystal': drawCrystal(ctx,cx,cy,r); break;
+    case 'wave': drawWave(ctx,cx,cy,r,S); break;
+    case 'cloud': drawCloud(ctx,cx,cy,r); break;
+    case 'bell': drawBell(ctx,cx,cy,r); break;
+    case 'home': drawHome(ctx,cx,cy,r); break;
+    case 'user': drawUser(ctx,cx,cy,r); break;
+    case 'chat': drawChat(ctx,cx,cy,r); break;
+    case 'music': drawMusic(ctx,cx,cy,r,S); break;
+    case 'camera': drawCamera(ctx,cx,cy,r); break;
+    case 'book': drawBook(ctx,cx,cy,r); break;
+    case 'compass': drawCompass(ctx,cx,cy,r); break;
+    case 'ring': drawRing(ctx,cx,cy,r); break;
+    case 'wand': drawWand(ctx,cx,cy,r,S); break;
+    case 'dragon': drawDragon(ctx,cx,cy,r); break;
+    case 'castle': drawCastle(ctx,cx,cy,r,S); break;
+    case 'orb': drawOrb(ctx,cx,cy,r); break;
+    default: drawAbstract(ctx,cx,cy,r,seed); break;
+  }
+}
+
+function drawStar(ctx,cx,cy,r,points) {
+  for(let i=0;i<points*2;i++){
+    const a = (Math.PI*2*i)/(points*2) - Math.PI/2;
+    const rad = i%2===0 ? r : r*0.4;
+    const x = cx+Math.cos(a)*rad, y = cy+Math.sin(a)*rad;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+}
+
+function drawHeart(ctx,cx,cy,r) {
+  const s = r*0.65;
+  ctx.moveTo(cx, cy+s*1.2);
+  ctx.bezierCurveTo(cx-s*2, cy-s*0.5, cx-s*0.8, cy-s*1.8, cx, cy-s*0.8);
+  ctx.bezierCurveTo(cx+s*0.8, cy-s*1.8, cx+s*2, cy-s*0.5, cx, cy+s*1.2);
+  ctx.closePath();
+}
+
+function drawShield(ctx,cx,cy,r) {
+  ctx.moveTo(cx, cy-r);
+  ctx.lineTo(cx+r*0.85, cy-r*0.5);
+  ctx.lineTo(cx+r*0.85, cy+r*0.2);
+  ctx.quadraticCurveTo(cx+r*0.6, cy+r*0.9, cx, cy+r*1.1);
+  ctx.quadraticCurveTo(cx-r*0.6, cy+r*0.9, cx-r*0.85, cy+r*0.2);
+  ctx.lineTo(cx-r*0.85, cy-r*0.5);
+  ctx.closePath();
+}
+
+function drawSword(ctx,cx,cy,r,S) {
+  const w = r*0.12;
+  ctx.moveTo(cx, cy-r*1.1);
+  ctx.lineTo(cx+w, cy+r*0.3);
+  ctx.lineTo(cx+r*0.35, cy+r*0.35);
+  ctx.lineTo(cx+r*0.35, cy+r*0.45);
+  ctx.lineTo(cx+w*1.5, cy+r*0.45);
+  ctx.lineTo(cx+w*1.5, cy+r*1.1);
+  ctx.lineTo(cx-w*1.5, cy+r*1.1);
+  ctx.lineTo(cx-w*1.5, cy+r*0.45);
+  ctx.lineTo(cx-r*0.35, cy+r*0.45);
+  ctx.lineTo(cx-r*0.35, cy+r*0.35);
+  ctx.lineTo(cx-w, cy+r*0.3);
+  ctx.closePath();
+}
+
+function drawCrown(ctx,cx,cy,r) {
+  const h = r*0.8, w = r*0.9;
+  ctx.moveTo(cx-w, cy+h*0.5);
+  ctx.lineTo(cx-w, cy-h*0.2);
+  ctx.lineTo(cx-w*0.5, cy+h*0.1);
+  ctx.lineTo(cx, cy-h*0.8);
+  ctx.lineTo(cx+w*0.5, cy+h*0.1);
+  ctx.lineTo(cx+w, cy-h*0.2);
+  ctx.lineTo(cx+w, cy+h*0.5);
+  ctx.closePath();
+}
+
+function drawGem(ctx,cx,cy,r) {
+  ctx.moveTo(cx, cy-r);
+  ctx.lineTo(cx+r*0.7, cy-r*0.3);
+  ctx.lineTo(cx+r*0.5, cy+r);
+  ctx.lineTo(cx-r*0.5, cy+r);
+  ctx.lineTo(cx-r*0.7, cy-r*0.3);
+  ctx.closePath();
+}
+
+function drawLightning(ctx,cx,cy,r,S) {
+  const w = r*0.5;
+  ctx.moveTo(cx+w*0.2, cy-r*1.1);
+  ctx.lineTo(cx+w, cy-r*1.1);
+  ctx.lineTo(cx-w*0.1, cy+r*0.1);
+  ctx.lineTo(cx+w*0.5, cy+r*0.1);
+  ctx.lineTo(cx-w*0.5, cy+r*1.1);
+  ctx.lineTo(cx-w*0.2, cy+r*0.1);
+  ctx.lineTo(cx-w*0.7, cy+r*0.1);
+  ctx.closePath();
+}
+
+function drawFire(ctx,cx,cy,r) {
+  ctx.moveTo(cx, cy-r*1.1);
+  ctx.bezierCurveTo(cx+r*0.3, cy-r*0.6, cx+r*0.9, cy-r*0.2, cx+r*0.6, cy+r*0.5);
+  ctx.bezierCurveTo(cx+r*0.5, cy+r*0.8, cx+r*0.2, cy+r, cx, cy+r*0.9);
+  ctx.bezierCurveTo(cx-r*0.2, cy+r, cx-r*0.5, cy+r*0.8, cx-r*0.6, cy+r*0.5);
+  ctx.bezierCurveTo(cx-r*0.9, cy-r*0.2, cx-r*0.3, cy-r*0.6, cx, cy-r*1.1);
+  ctx.closePath();
+}
+
+function drawMoon(ctx,cx,cy,r) {
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.moveTo(cx+r*0.4+r*0.75, cy);
+  ctx.arc(cx+r*0.4, cy, r*0.75, 0, Math.PI*2, true);
+}
+
+function drawSun(ctx,cx,cy,r) {
+  ctx.arc(cx, cy, r*0.5, 0, Math.PI*2);
+  ctx.closePath();
+  for(let i=0;i<12;i++){
+    const a = (Math.PI*2*i)/12;
+    const x1 = cx+Math.cos(a)*r*0.65, y1 = cy+Math.sin(a)*r*0.65;
+    const x2 = cx+Math.cos(a)*r, y2 = cy+Math.sin(a)*r;
+    ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+  }
+}
+
+function drawLeaf(ctx,cx,cy,r) {
+  ctx.moveTo(cx, cy-r);
+  ctx.bezierCurveTo(cx+r, cy-r*0.5, cx+r*0.8, cy+r*0.5, cx, cy+r);
+  ctx.bezierCurveTo(cx-r*0.8, cy+r*0.5, cx-r, cy-r*0.5, cx, cy-r);
+  ctx.closePath();
+}
+
+function drawMountain(ctx,cx,cy,r) {
+  ctx.moveTo(cx-r, cy+r*0.7);
+  ctx.lineTo(cx-r*0.3, cy-r*0.6);
+  ctx.lineTo(cx-r*0.1, cy-r*0.2);
+  ctx.lineTo(cx+r*0.15, cy-r*0.8);
+  ctx.lineTo(cx+r*0.5, cy-r*0.1);
+  ctx.lineTo(cx+r, cy+r*0.7);
+  ctx.closePath();
+}
+
+function drawGear(ctx,cx,cy,r) {
+  const teeth = 8, inner = r*0.55, outer = r, mid = r*0.75;
+  for(let i=0;i<teeth;i++){
+    const a1 = (Math.PI*2*i)/teeth;
+    const a2 = a1 + Math.PI/teeth*0.4;
+    const a3 = a1 + Math.PI/teeth*0.6;
+    const a4 = a1 + Math.PI/teeth;
+    if(i===0) ctx.moveTo(cx+Math.cos(a1)*mid, cy+Math.sin(a1)*mid);
+    ctx.lineTo(cx+Math.cos(a1)*outer, cy+Math.sin(a1)*outer);
+    ctx.lineTo(cx+Math.cos(a2)*outer, cy+Math.sin(a2)*outer);
+    ctx.lineTo(cx+Math.cos(a3)*mid, cy+Math.sin(a3)*mid);
+    ctx.lineTo(cx+Math.cos(a4)*mid, cy+Math.sin(a4)*mid);
+  }
+  ctx.closePath();
+  ctx.moveTo(cx+inner, cy);
+  ctx.arc(cx, cy, inner*0.45, 0, Math.PI*2, true);
+}
+
+function drawRocket(ctx,cx,cy,r,S) {
+  ctx.moveTo(cx, cy-r*1.1);
+  ctx.bezierCurveTo(cx+r*0.35, cy-r*0.6, cx+r*0.35, cy+r*0.3, cx+r*0.3, cy+r*0.7);
+  ctx.lineTo(cx+r*0.65, cy+r*1.0);
+  ctx.lineTo(cx+r*0.2, cy+r*0.7);
+  ctx.lineTo(cx, cy+r*0.9);
+  ctx.lineTo(cx-r*0.2, cy+r*0.7);
+  ctx.lineTo(cx-r*0.65, cy+r*1.0);
+  ctx.lineTo(cx-r*0.3, cy+r*0.7);
+  ctx.bezierCurveTo(cx-r*0.35, cy+r*0.3, cx-r*0.35, cy-r*0.6, cx, cy-r*1.1);
+  ctx.closePath();
+}
+
+function drawEye(ctx,cx,cy,r) {
+  ctx.moveTo(cx-r, cy);
+  ctx.bezierCurveTo(cx-r*0.5, cy-r*0.8, cx+r*0.5, cy-r*0.8, cx+r, cy);
+  ctx.bezierCurveTo(cx+r*0.5, cy+r*0.8, cx-r*0.5, cy+r*0.8, cx-r, cy);
+  ctx.closePath();
+  ctx.moveTo(cx+r*0.35, cy);
+  ctx.arc(cx, cy, r*0.35, 0, Math.PI*2);
+}
+
+function drawKey(ctx,cx,cy,r,S) {
+  ctx.arc(cx, cy-r*0.4, r*0.35, 0, Math.PI*2);
+  ctx.closePath();
+  ctx.moveTo(cx-r*0.08, cy-r*0.05);
+  ctx.rect(cx-r*0.08, cy-r*0.05, r*0.16, r*1.2);
+  ctx.rect(cx+r*0.08, cy+r*0.6, r*0.25, r*0.1);
+  ctx.rect(cx+r*0.08, cy+r*0.85, r*0.18, r*0.1);
+}
+
+function drawLock(ctx,cx,cy,r,S) {
+  const w = r*0.7, h = r*0.8;
+  ctx.roundRect(cx-w, cy-h*0.2, w*2, h*1.3, r*0.15);
+  ctx.closePath();
+  ctx.moveTo(cx+r*0.45, cy-h*0.2);
+  ctx.arc(cx, cy-h*0.2, r*0.45, 0, Math.PI, true);
+  ctx.lineTo(cx-r*0.45, cy-h*0.2);
+  ctx.lineTo(cx-r*0.3, cy-h*0.2);
+  ctx.arc(cx, cy-h*0.2, r*0.3, Math.PI, 0, false);
+  ctx.lineTo(cx+r*0.45, cy-h*0.2);
+}
+
+function drawSkull(ctx,cx,cy,r) {
+  ctx.arc(cx, cy-r*0.15, r*0.75, Math.PI*0.1, Math.PI*0.9, true);
+  ctx.bezierCurveTo(cx-r*0.5, cy+r*0.5, cx-r*0.35, cy+r*0.9, cx-r*0.2, cy+r*0.9);
+  ctx.lineTo(cx-r*0.1, cy+r*0.65);
+  ctx.lineTo(cx, cy+r*0.9);
+  ctx.lineTo(cx+r*0.1, cy+r*0.65);
+  ctx.lineTo(cx+r*0.2, cy+r*0.9);
+  ctx.bezierCurveTo(cx+r*0.35, cy+r*0.9, cx+r*0.5, cy+r*0.5, cx+r*0.72, cy+r*0.05);
+  ctx.closePath();
+}
+
+function drawArrow(ctx,cx,cy,r,S) {
+  const w = r*0.25;
+  ctx.moveTo(cx, cy-r);
+  ctx.lineTo(cx+r*0.6, cy-r*0.15);
+  ctx.lineTo(cx+w, cy-r*0.15);
+  ctx.lineTo(cx+w, cy+r);
+  ctx.lineTo(cx-w, cy+r);
+  ctx.lineTo(cx-w, cy-r*0.15);
+  ctx.lineTo(cx-r*0.6, cy-r*0.15);
+  ctx.closePath();
+}
+
+function drawPotion(ctx,cx,cy,r,S) {
+  ctx.moveTo(cx-r*0.15, cy-r*0.9);
+  ctx.lineTo(cx+r*0.15, cy-r*0.9);
+  ctx.lineTo(cx+r*0.15, cy-r*0.5);
+  ctx.lineTo(cx+r*0.55, cy-r*0.1);
+  ctx.bezierCurveTo(cx+r*0.7, cy+r*0.2, cx+r*0.6, cy+r*0.8, cx, cy+r*0.95);
+  ctx.bezierCurveTo(cx-r*0.6, cy+r*0.8, cx-r*0.7, cy+r*0.2, cx-r*0.55, cy-r*0.1);
+  ctx.lineTo(cx-r*0.15, cy-r*0.5);
+  ctx.closePath();
+}
+
+function drawCrystal(ctx,cx,cy,r) {
+  ctx.moveTo(cx, cy-r*1.1);
+  ctx.lineTo(cx+r*0.4, cy-r*0.4);
+  ctx.lineTo(cx+r*0.6, cy+r*0.3);
+  ctx.lineTo(cx+r*0.2, cy+r*1.0);
+  ctx.lineTo(cx-r*0.2, cy+r*1.0);
+  ctx.lineTo(cx-r*0.6, cy+r*0.3);
+  ctx.lineTo(cx-r*0.4, cy-r*0.4);
+  ctx.closePath();
+}
+
+function drawWave(ctx,cx,cy,r,S) {
+  ctx.moveTo(cx-r, cy);
+  ctx.bezierCurveTo(cx-r*0.5, cy-r*0.8, cx-r*0.2, cy-r*0.8, cx, cy);
+  ctx.bezierCurveTo(cx+r*0.2, cy+r*0.8, cx+r*0.5, cy+r*0.8, cx+r, cy);
+  ctx.lineTo(cx+r, cy+r*0.5);
+  ctx.bezierCurveTo(cx+r*0.5, cy+r*0.5+r*0.5, cx+r*0.2, cy+r*0.5+r*0.5, cx, cy+r*0.5);
+  ctx.bezierCurveTo(cx-r*0.2, cy+r*0.5-r*0.5, cx-r*0.5, cy+r*0.5-r*0.5, cx-r, cy+r*0.5);
+  ctx.closePath();
+}
+
+function drawCloud(ctx,cx,cy,r) {
+  ctx.arc(cx-r*0.3, cy, r*0.45, 0, Math.PI*2);
+  ctx.closePath();
+  ctx.moveTo(cx+r*0.55, cy+r*0.1);
+  ctx.arc(cx+r*0.25, cy+r*0.1, r*0.3, 0, Math.PI*2);
+  ctx.closePath();
+  ctx.moveTo(cx+r*0.55, cy-r*0.2);
+  ctx.arc(cx+r*0.05, cy-r*0.3, r*0.35, 0, Math.PI*2);
+  ctx.closePath();
+  ctx.moveTo(cx+r*0.7, cy);
+  ctx.arc(cx+r*0.5, cy-r*0.05, r*0.3, 0, Math.PI*2);
+  ctx.closePath();
+}
+
+function drawBell(ctx,cx,cy,r) {
+  ctx.moveTo(cx-r*0.6, cy+r*0.5);
+  ctx.bezierCurveTo(cx-r*0.6, cy-r*0.3, cx-r*0.3, cy-r*0.9, cx, cy-r*0.9);
+  ctx.bezierCurveTo(cx+r*0.3, cy-r*0.9, cx+r*0.6, cy-r*0.3, cx+r*0.6, cy+r*0.5);
+  ctx.lineTo(cx+r*0.8, cy+r*0.6);
+  ctx.lineTo(cx-r*0.8, cy+r*0.6);
+  ctx.closePath();
+  ctx.moveTo(cx+r*0.15, cy+r*0.75);
+  ctx.arc(cx, cy+r*0.75, r*0.15, 0, Math.PI*2);
+}
+
+function drawHome(ctx,cx,cy,r) {
+  ctx.moveTo(cx, cy-r*0.9);
+  ctx.lineTo(cx+r*0.85, cy-r*0.05);
+  ctx.lineTo(cx+r*0.65, cy-r*0.05);
+  ctx.lineTo(cx+r*0.65, cy+r*0.8);
+  ctx.lineTo(cx+r*0.15, cy+r*0.8);
+  ctx.lineTo(cx+r*0.15, cy+r*0.2);
+  ctx.lineTo(cx-r*0.15, cy+r*0.2);
+  ctx.lineTo(cx-r*0.15, cy+r*0.8);
+  ctx.lineTo(cx-r*0.65, cy+r*0.8);
+  ctx.lineTo(cx-r*0.65, cy-r*0.05);
+  ctx.lineTo(cx-r*0.85, cy-r*0.05);
+  ctx.closePath();
+}
+
+function drawUser(ctx,cx,cy,r) {
+  ctx.arc(cx, cy-r*0.35, r*0.35, 0, Math.PI*2);
+  ctx.closePath();
+  ctx.moveTo(cx+r*0.75, cy+r*0.9);
+  ctx.bezierCurveTo(cx+r*0.75, cy+r*0.2, cx+r*0.5, cy+r*0.05, cx, cy+r*0.15);
+  ctx.bezierCurveTo(cx-r*0.5, cy+r*0.05, cx-r*0.75, cy+r*0.2, cx-r*0.75, cy+r*0.9);
+  ctx.closePath();
+}
+
+function drawChat(ctx,cx,cy,r) {
+  ctx.moveTo(cx-r*0.8, cy-r*0.5);
+  ctx.roundRect(cx-r*0.8, cy-r*0.6, r*1.6, r*1.1, r*0.2);
+  ctx.closePath();
+  ctx.moveTo(cx-r*0.2, cy+r*0.5);
+  ctx.lineTo(cx-r*0.4, cy+r*0.9);
+  ctx.lineTo(cx+r*0.1, cy+r*0.5);
+}
+
+function drawMusic(ctx,cx,cy,r,S) {
+  ctx.arc(cx-r*0.25, cy+r*0.5, r*0.25, 0, Math.PI*2);
+  ctx.closePath();
+  ctx.arc(cx+r*0.35, cy+r*0.3, r*0.25, 0, Math.PI*2);
+  ctx.closePath();
+  ctx.moveTo(cx, cy+r*0.5);
+  ctx.rect(cx-r*0.04, cy-r*0.8, r*0.08, r*1.3);
+  ctx.rect(cx+r*0.55, cy-r*0.8, r*0.08, r*1.1);
+  ctx.rect(cx-r*0.04, cy-r*0.8, r*0.63, r*0.1);
+}
+
+function drawCamera(ctx,cx,cy,r) {
+  ctx.roundRect(cx-r*0.85, cy-r*0.4, r*1.7, r*1.2, r*0.12);
+  ctx.closePath();
+  ctx.moveTo(cx-r*0.3, cy-r*0.4);
+  ctx.lineTo(cx-r*0.2, cy-r*0.7);
+  ctx.lineTo(cx+r*0.2, cy-r*0.7);
+  ctx.lineTo(cx+r*0.3, cy-r*0.4);
+  ctx.closePath();
+  ctx.moveTo(cx+r*0.35, cy+r*0.15);
+  ctx.arc(cx, cy+r*0.15, r*0.35, 0, Math.PI*2);
+}
+
+function drawBook(ctx,cx,cy,r) {
+  ctx.moveTo(cx, cy-r*0.75);
+  ctx.lineTo(cx-r*0.8, cy-r*0.75);
+  ctx.lineTo(cx-r*0.8, cy+r*0.75);
+  ctx.lineTo(cx, cy+r*0.55);
+  ctx.closePath();
+  ctx.moveTo(cx, cy-r*0.75);
+  ctx.lineTo(cx+r*0.8, cy-r*0.75);
+  ctx.lineTo(cx+r*0.8, cy+r*0.75);
+  ctx.lineTo(cx, cy+r*0.55);
+  ctx.closePath();
+}
+
+function drawCompass(ctx,cx,cy,r) {
+  ctx.arc(cx, cy, r*0.85, 0, Math.PI*2);
+  ctx.closePath();
+  ctx.moveTo(cx, cy-r*0.65);
+  ctx.lineTo(cx+r*0.15, cy);
+  ctx.lineTo(cx, cy+r*0.65);
+  ctx.lineTo(cx-r*0.15, cy);
+  ctx.closePath();
+}
+
+function drawRing(ctx,cx,cy,r) {
+  ctx.arc(cx, cy, r*0.85, 0, Math.PI*2);
+  ctx.closePath();
+  ctx.moveTo(cx+r*0.55, cy);
+  ctx.arc(cx, cy, r*0.55, 0, Math.PI*2, true);
+}
+
+function drawWand(ctx,cx,cy,r,S) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(-Math.PI/4);
+  ctx.roundRect(-r*0.08, -r*1.1, r*0.16, r*2.2, r*0.04);
+  ctx.restore();
+  drawStar(ctx, cx-r*0.35, cy-r*0.35, r*0.25, 4);
+}
+
+function drawDragon(ctx,cx,cy,r) {
+  ctx.moveTo(cx-r*0.6, cy-r*0.3);
+  ctx.bezierCurveTo(cx-r*0.4, cy-r*0.9, cx+r*0.2, cy-r*0.9, cx+r*0.4, cy-r*0.5);
+  ctx.lineTo(cx+r*0.7, cy-r*0.7);
+  ctx.lineTo(cx+r*0.5, cy-r*0.3);
+  ctx.bezierCurveTo(cx+r*0.8, cy-r*0.1, cx+r*0.7, cy+r*0.5, cx+r*0.3, cy+r*0.7);
+  ctx.lineTo(cx+r*0.6, cy+r*0.9);
+  ctx.lineTo(cx+r*0.1, cy+r*0.7);
+  ctx.bezierCurveTo(cx-r*0.2, cy+r*0.9, cx-r*0.6, cy+r*0.7, cx-r*0.7, cy+r*0.3);
+  ctx.lineTo(cx-r*0.9, cy+r*0.5);
+  ctx.lineTo(cx-r*0.7, cy+r*0.1);
+  ctx.bezierCurveTo(cx-r*0.8, cy-r*0.1, cx-r*0.7, cy-r*0.2, cx-r*0.6, cy-r*0.3);
+  ctx.closePath();
+}
+
+function drawCastle(ctx,cx,cy,r,S) {
+  const w = r*0.8, h = r;
+  ctx.moveTo(cx-w, cy+h);
+  ctx.lineTo(cx-w, cy-h*0.3);
+  ctx.lineTo(cx-w+r*0.15, cy-h*0.3);
+  ctx.lineTo(cx-w+r*0.15, cy-h*0.5);
+  ctx.lineTo(cx-w+r*0.3, cy-h*0.5);
+  ctx.lineTo(cx-w+r*0.3, cy-h*0.3);
+  ctx.lineTo(cx-r*0.15, cy-h*0.3);
+  ctx.lineTo(cx-r*0.15, cy-h*0.8);
+  ctx.lineTo(cx, cy-h);
+  ctx.lineTo(cx+r*0.15, cy-h*0.8);
+  ctx.lineTo(cx+r*0.15, cy-h*0.3);
+  ctx.lineTo(cx+w-r*0.3, cy-h*0.3);
+  ctx.lineTo(cx+w-r*0.3, cy-h*0.5);
+  ctx.lineTo(cx+w-r*0.15, cy-h*0.5);
+  ctx.lineTo(cx+w-r*0.15, cy-h*0.3);
+  ctx.lineTo(cx+w, cy-h*0.3);
+  ctx.lineTo(cx+w, cy+h);
+  ctx.closePath();
+}
+
+function drawOrb(ctx,cx,cy,r) {
+  ctx.arc(cx, cy, r*0.8, 0, Math.PI*2);
+  ctx.closePath();
+}
+
+function drawAbstract(ctx,cx,cy,r,seed) {
+  const rng = seededRandom(seed);
+  const sides = 3 + Math.floor(rng()*5);
+  for(let i=0;i<sides;i++){
+    const a = (Math.PI*2*i)/sides - Math.PI/2;
+    const rad = r*(0.6+rng()*0.4);
+    const x = cx+Math.cos(a)*rad, y = cy+Math.sin(a)*rad;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+}
+
+// Pixelate helper
+function pixelate(ctx, S, blockSize) {
+  const imageData = ctx.getImageData(0,0,S,S);
+  const d = imageData.data;
+  for(let y=0;y<S;y+=blockSize){
+    for(let x=0;x<S;x+=blockSize){
+      let rr=0,gg=0,bb=0,aa=0,count=0;
+      for(let dy=0;dy<blockSize&&y+dy<S;dy++){
+        for(let dx=0;dx<blockSize&&x+dx<S;dx++){
+          const i=((y+dy)*S+(x+dx))*4;
+          rr+=d[i];gg+=d[i+1];bb+=d[i+2];aa+=d[i+3];count++;
+        }
+      }
+      rr=Math.round(rr/count);gg=Math.round(gg/count);bb=Math.round(bb/count);aa=Math.round(aa/count);
+      for(let dy=0;dy<blockSize&&y+dy<S;dy++){
+        for(let dx=0;dx<blockSize&&x+dx<S;dx++){
+          const i=((y+dy)*S+(x+dx))*4;
+          d[i]=rr;d[i+1]=gg;d[i+2]=bb;d[i+3]=aa;
+        }
+      }
+    }
+  }
+  ctx.putImageData(imageData,0,0);
+}
+
+// ==================== GENERATION LOGIC ====================
+
+async function generateIcons() {
+  const prompt = document.getElementById('promptInput').value.trim();
+  if(!prompt) { showToast('Lütfen bir prompt girin!'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.add('show');
+
+  const steps = ['Prompt analiz ediliyor...','Şekiller oluşturuluyor...','Stiller uygulanıyor...','Renkler ayarlanıyor...','Son rötuşlar yapılıyor...','İkonlar hazırlanıyor...'];
+  const stepEl = document.getElementById('loadingStep');
+  const progressEl = document.getElementById('progressFill');
+
+  let stepIdx = 0;
+  const stepInterval = setInterval(() => {
+    stepIdx++;
+    if(stepIdx < steps.length) {
+      stepEl.textContent = steps[stepIdx];
+      progressEl.style.width = ((stepIdx+1)/steps.length*100)+'%';
+    }
+  }, 400);
+
+  // Simulate AI processing time
+  await new Promise(r => setTimeout(r, 2200));
+
+  clearInterval(stepInterval);
+  progressEl.style.width = '100%';
+
+  // Generate icons
+  const cat = getCatConfig(state.category);
+  const size = state.size;
+  const count = state.packCount;
+  const baseShape = detectShape(prompt);
+
+  state.generatedIcons = [];
+
+  const allColors = state.customColor ?
+    [state.customColor, ...cat.colors.filter(c => c !== state.customColor)] :
+    [...cat.colors];
+
+  for(let i = 0; i < count; i++) {
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+
+    const seed = hashStr(prompt + i + state.category + Date.now());
+    const rng = seededRandom(seed);
+
+    // Vary colors for pack consistency
+    const colorOffset = i % allColors.length;
+    const iconColors = [
+      allColors[colorOffset],
+      allColors[(colorOffset+1) % allColors.length],
+      allColors[(colorOffset+2) % allColors.length]
+    ];
+
+    // For pack variation, slightly vary the shape
+    let shape = baseShape;
+    if(count > 1 && i > 0 && baseShape !== 'abstract') {
+      // Keep some as the base shape, vary others
+      const shapeVariants = getRelatedShapes(baseShape);
+      if(i < shapeVariants.length + 1) {
+        shape = i === 0 ? baseShape : shapeVariants[(i-1) % shapeVariants.length];
+      }
+    }
+
+    drawIcon(ctx, shape, size, iconColors, seed, state.styles, state.category);
+
+    const dataUrl = canvas.toDataURL('image/png');
+    state.generatedIcons.push({
+      dataUrl,
+      shape,
+      prompt: prompt + (count > 1 ? ` (${i+1}/${count})` : ''),
+      size,
+      category: state.category
+    });
+  }
+
+  // Show output
+  await new Promise(r => setTimeout(r, 300));
+  overlay.classList.remove('show');
+  progressEl.style.width = '0%';
+  btn.disabled = false;
+
+  document.getElementById('outputPlaceholder').style.display = 'none';
+  document.getElementById('outputContent').style.display = 'block';
+
+  renderGeneratedIcons();
+  saveToHistory(prompt);
+  showToast(`${count} ikon başarıyla oluşturuldu!`);
+}
+
+function getRelatedShapes(shape) {
+  const groups = {
+    combat: ['sword','shield','arrow','skull','crown'],
+    nature: ['leaf','mountain','wave','cloud','sun','moon','fire'],
+    magic: ['star','crystal','gem','wand','potion','orb','eye'],
+    ui: ['gear','home','user','chat','bell','camera','lock','key','book','music','compass'],
+    misc: ['heart','rocket','ring','lightning','dragon','castle','arrow']
+  };
+  for(const [,shapes] of Object.entries(groups)) {
+    if(shapes.includes(shape)) return shapes.filter(s => s !== shape);
+  }
+  return ['star','heart','gem','shield'];
+}
+
+function renderGeneratedIcons() {
+  const grid = document.getElementById('iconsGrid');
+  grid.innerHTML = state.generatedIcons.map((icon, i) => `
+    <div class="icon-card fade-in" style="animation-delay:${i*0.1}s">
+      <img src="${icon.dataUrl}" alt="${icon.prompt}" class="checker-bg">
+      <div class="icon-label">${icon.prompt}</div>
+      <div class="icon-actions">
+        <button class="icon-action-btn primary" onclick="downloadIcon(${i})">⬇ PNG</button>
+        <button class="icon-action-btn" onclick="copyIcon(${i})">📋</button>
+        <button class="icon-action-btn" onclick="regenerateIcon(${i})">🔄</button>
+      </div>
+    </div>
+  `).join('');
+
+  const bar = document.getElementById('downloadBar');
+  bar.classList.toggle('show', state.generatedIcons.length > 1);
+  document.getElementById('iconCount').textContent = state.generatedIcons.length;
+  document.getElementById('iconSize').textContent = `${state.size}×${state.size}`;
+}
+
+function downloadIcon(index) {
+  const icon = state.generatedIcons[index];
+  const a = document.createElement('a');
+  a.href = icon.dataUrl;
+  a.download = `iconforge-${icon.shape}-${icon.size}px.png`;
+  a.click();
+  showToast('İkon indirildi!');
+}
+
+async function copyIcon(index) {
+  const icon = state.generatedIcons[index];
+  try {
+    const res = await fetch(icon.dataUrl);
+    const blob = await res.blob();
+    await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+    showToast('İkon panoya kopyalandı!');
+  } catch(e) {
+    showToast('Kopyalama başarısız, indirin');
+  }
+}
+
+function regenerateIcon(index) {
+  const icon = state.generatedIcons[index];
+  const canvas = document.createElement('canvas');
+  canvas.width = icon.size;
+  canvas.height = icon.size;
+  const ctx = canvas.getContext('2d');
+  const cat = getCatConfig(icon.category);
+  const seed = hashStr(icon.prompt + Date.now());
+  const colors = state.customColor ?
+    [state.customColor, ...cat.colors.filter(c => c !== state.customColor)] :
+    [...cat.colors];
+  drawIcon(ctx, icon.shape, icon.size, colors, seed, state.styles, icon.category);
+  state.generatedIcons[index].dataUrl = canvas.toDataURL('image/png');
+  renderGeneratedIcons();
+  showToast('İkon yeniden oluşturuldu!');
+}
+
+function downloadAll() {
+  state.generatedIcons.forEach((icon, i) => {
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = icon.dataUrl;
+      a.download = `iconforge-pack-${i+1}-${icon.shape}-${icon.size}px.png`;
+      a.click();
+    }, i * 200);
+  });
+  showToast(`${state.generatedIcons.length} ikon indiriliyor...`);
+}
+
+// ==================== HISTORY ====================
+
+function saveToHistory(prompt) {
+  const entry = {
+    id: Date.now(),
+    prompt,
+    category: state.category,
+    count: state.packCount,
+    size: state.size,
+    icons: state.generatedIcons.map(i => i.dataUrl).slice(0, 3),
+    date: new Date().toLocaleString('tr-TR')
+  };
+  state.history.unshift(entry);
+  if(state.history.length > 20) state.history.pop();
+  localStorage.setItem('iconforge_history', JSON.stringify(state.history));
+  renderHistory();
+}
+
+function renderHistory() {
+  const grid = document.getElementById('historyGrid');
+  if(state.history.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);font-size:.9rem">Henüz ikon üretilmedi. İlk ikonunu oluştur! ✨</div>`;
+    return;
+  }
+  grid.innerHTML = state.history.map(h => `
+    <div class="history-item" onclick="loadFromHistory('${h.prompt}','${h.category}')">
+      <div class="history-icons">
+        ${h.icons.map(url => `<img src="${url}" alt="">`).join('')}
+        ${h.icons.length < 3 ? '<div></div>'.repeat(3 - h.icons.length) : ''}
+      </div>
+      <div style="font-size:.85rem;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.prompt}</div>
+      <div class="history-meta">
+        <span class="cat-tag">${h.category}</span> • ${h.count} ikon • ${h.size}px
+      </div>
+      <div style="font-size:.7rem;color:var(--text3);margin-top:4px">${h.date}</div>
+    </div>
+  `).join('');
+}
+
+function loadFromHistory(prompt, category) {
+  document.getElementById('promptInput').value = prompt;
+  state.prompt = prompt;
+  selectCategory(category);
+  window.scrollTo({top: document.getElementById('generator').offsetTop - 80, behavior:'smooth'});
+}
+
+// ==================== TOAST ====================
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast success show';
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ==================== KEYBOARD SHORTCUT ====================
+document.addEventListener('keydown', e => {
+  if((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    generateIcons();
+  }
+});
+</script>
+</body>
+</html>
