@@ -1,102 +1,156 @@
-const S={
-  fantasy:'fantasy RPG game item, hand painted, detailed, magical glow, concept art',
-  anime:'anime style item, vibrant colors, clean lineart, cel shading, japanese anime'
-};
-const TAGS={
-  fantasy:['Potion','Sword','Shield','Staff','Chest','Gem','Bow','Helmet','Ring','Aura'],
-  anime:['Katana','Spirit Orb','Scroll','Amulet','Crystal','Potion','Tome','Armor','Fan','Shuriken']
-};
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArtForge AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0a;--s1:#111;--s2:#1a1a1a;--s3:#242424;--border:#2e2e2e;--border2:#444;--text:#f0f0f0;--mid:#888;--dim:#444;--white:#fff;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 20px 80px;}
+  .header{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:32px;}
+  .logo{width:40px;height:40px;background:var(--white);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  h1{font-family:'Space Mono',monospace;font-size:20px;color:var(--white);}
+  .sub{font-size:11px;color:var(--mid);margin-top:2px;}
+  .tabs{display:flex;gap:1px;background:var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+  .tab{flex:1;padding:13px;background:var(--s1);border:none;cursor:pointer;transition:background .2s;text-align:center;color:var(--mid);}
+  .tab .ti{font-size:20px;display:block;margin-bottom:3px;}
+  .tab .tn{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;}
+  .tab.active{background:var(--s3);}
+  .tab.active .tn{color:var(--white);}
+  .card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+  .clbl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;}
+  .tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+  .tag{background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;color:var(--mid);}
+  textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:14px;resize:none;outline:none;}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+  .opt label{display:block;font-size:9px;text-transform:uppercase;color:var(--dim);margin-bottom:5px;font-family:'Space Mono',monospace;}
+  select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px;color:var(--text);outline:none;cursor:pointer;}
+  .gbtn{width:100%;margin-top:14px;padding:14px;border-radius:8px;border:none;background:var(--white);color:var(--bg);font-family:'Space Mono',monospace;font-weight:700;cursor:pointer;}
+  .gbtn:disabled{opacity:0.5;cursor:not-allowed;}
+  .result{background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;min-height:300px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+  .ph{text-align:center;color:var(--dim);}
+  .loading{display:none;text-align:center;}
+  .loading.on{display:block;}
+  .spin{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--white);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .img-wrap{display:none;width:100%;}
+  .img-wrap.on{display:block;}
+  #img{width:100%;display:block;background:#000;}
+  .img-actions{display:flex;gap:1px;border-top:1px solid var(--border);}
+  .iact{flex:1;padding:12px;background:var(--s2);border:none;color:var(--mid);font-size:12px;cursor:pointer;text-decoration:none;text-align:center;}
+  .gh{display:flex;align-items:center;gap:10px;margin:20px 0 12px;}
+  .gh span{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);}
+  .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;}
+  .gi{aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--s2);}
+  .gi img{width:100%;height:100%;object-fit:cover;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="logo">🎨</div>
+    <div><h1>ArtForge AI</h1><div class="sub">Hızlı Görsel Oluşturucu</div></div>
+  </div>
 
-let style='fantasy', curUrl=null, gallery=[];
+  <div class="tabs">
+    <button class="tab active" id="tabF" onclick="setStyle('fantasy')"><span class="ti">⚗️</span><div class="tn">Fantasy</div></button>
+    <button class="tab" id="tabA" onclick="setStyle('anime')"><span class="ti">🌸</span><div class="tn">Anime</div></button>
+  </div>
+
+  <div class="card">
+    <div class="clbl">Prompt</div>
+    <div id="tagsWrap" class="tags"></div>
+    <textarea id="prompt" rows="3" placeholder="Örn: magic sword, blue fire..."></textarea>
+    <div class="opts">
+      <div class="opt"><label>Boyut</label><select id="size"><option value="512x512">512x512</option><option value="1024x1024">1024x1024</option></select></div>
+      <div class="opt"><label>Model</label><select id="model"><option value="turbo">Turbo (Hızlı)</option><option value="flux">Flux (Kaliteli)</option></select></div>
+    </div>
+    <button class="gbtn" id="gbtn" onclick="gen()">GENERATE</button>
+  </div>
+
+  <div class="result" id="result">
+    <div class="ph" id="ph">🖼 Görsel Hazır Değil</div>
+    <div class="loading" id="loading"><div class="spin"></div><div id="stxt">Oluşturuluyor...</div></div>
+    <div class="img-wrap" id="imgWrap">
+      <img id="img" src="" alt="">
+      <div class="img-actions">
+        <a id="dlBtn" class="iact" target="_blank">Aç</a>
+        <button class="iact" onclick="saveGallery()">Galeri</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="gh"><span>GALERİ</span></div>
+  <div class="gg" id="gg"></div>
+</div>
+
+<script>
+const S={fantasy:'fantasy game item, detailed concept art, magical', anime:'anime style, high quality, vibrant'};
+const TAGS={fantasy:['Potion','Sword','Staff','Ring'], anime:['Katana','Scroll','Orb','Crystal']};
+let style='fantasy', curUrl='', gallery=[];
 
 function renderTags(s){
-  document.getElementById('tagsWrap').innerHTML=
-    TAGS[s].map(t=>`<span class="tag" onclick="addTag('${t.toLowerCase()}')">${t}</span>`).join('');
+  document.getElementById('tagsWrap').innerHTML=TAGS[s].map(t=>`<span class="tag" onclick="addTag('${t}')">${t}</span>`).join('');
 }
-
 function setStyle(s){
-  style=s;
-  document.getElementById('tabF').className='tab'+(s==='fantasy'?' active':'');
-  document.getElementById('tabA').className='tab'+(s==='anime'?' active':'');
+  style=s; 
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(s==='fantasy'?'tabF':'tabA').classList.add('active');
   renderTags(s);
 }
-
-function addTag(v){
-  const el=document.getElementById('prompt');
-  el.value=el.value?el.value+', '+v:v;
-  el.focus();
-}
+function addTag(t){ const p=document.getElementById('prompt'); p.value+= (p.value?', ':'')+t; }
 
 renderTags('fantasy');
 
 function gen(){
-  const p = document.getElementById('prompt').value.trim();
-  if(!p){alert('Bir şey yaz! Örn: red fire sword');return;}
+  const p=document.getElementById('prompt').value;
+  if(!p) return alert('Prompt yaz!');
+  
+  const m=document.getElementById('model').value;
+  const sz=document.getElementById('size').value.split('x');
+  const seed=Math.floor(Math.random()*1000000);
+  
+  // URL Temizleme: Boşlukları ve özel karakterleri düzeltir
+  const finalPrompt = `${S[style]}, ${p}, white background, high resolution`;
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?width=${sz[0]}&height=${sz[1]}&model=${m}&seed=${seed}&nologo=true`;
 
-  const sz = document.getElementById('size').value.split('x');
-  const m = document.getElementById('model').value;
-  const seed = Math.floor(Math.random()*999999);
-
-  // URL oluşturma
-  const full = S[style] + ', ' + p + ', white background, no text, no watermark';
-  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(full)}?width=${sz[0]}&height=${sz[1]}&model=${m}&seed=${seed}&nologo=true`;
-
-  // UI Hazırlığı
-  document.getElementById('ph').style.display = 'none';
-  document.getElementById('imgWrap').classList.remove('on');
+  document.getElementById('ph').style.display='none';
+  document.getElementById('imgWrap').style.display='none';
   document.getElementById('loading').classList.add('on');
-  document.getElementById('gbtn').disabled = true;
-  document.getElementById('gbtn').textContent = 'Generating...';
+  document.getElementById('gbtn').disabled=true;
 
-  // Yükleme mesajları
-  const msgs = [["ÇİZİLİYOR...", "AI fırçayı sallıyor..."], ["HESAPLANIYOR...", "Detaylar işleniyor..."], ["AZ KALDI...", "Son dokunuşlar..."]];
-  let mi = 0;
-  clearInterval(window._mt);
-  window._mt = setInterval(() => {
-    const x = msgs[mi++ % msgs.length];
-    document.getElementById('stxt').textContent = x[0];
-    document.getElementById('ssub').textContent = x[1];
-  }, 4000);
-
-  // DOĞRUDAN YÜKLEME YÖNTEMİ
-  const mainImg = document.getElementById('img');
+  const image = document.getElementById('img');
+  // Önceki resmi temizle ki eskisi görünmesin
+  image.src = '';
   
-  // Önceki resmi temizle (önemli!)
-  mainImg.src = ''; 
-  
-  mainImg.onload = function() {
-    clearInterval(window._mt);
-    curUrl = url;
+  // Resim yüklendiğinde
+  image.onload = function() {
     document.getElementById('loading').classList.remove('on');
-    document.getElementById('imgWrap').classList.add('on');
+    document.getElementById('imgWrap').style.display='block';
+    document.getElementById('gbtn').disabled=false;
     document.getElementById('dlBtn').href = url;
-    document.getElementById('gbtn').disabled = false;
-    document.getElementById('gbtn').textContent = 'Generate';
+    curUrl = url;
   };
 
-  mainImg.onerror = function() {
-    // Hata durumunda alternatif: URL'yi yeni sekmede açmayı öner
-    clearInterval(window._mt);
+  // Hata durumunda (İşte senin aldığın o 'yazı' çıkma hatasını burada yakalıyoruz)
+  image.onerror = function() {
+    alert('Hata oluştu! Model şu an yoğun olabilir. Turbo modelini denemeyi unutma.');
     document.getElementById('loading').classList.remove('on');
-    document.getElementById('gbtn').disabled = false;
-    document.getElementById('gbtn').textContent = 'Generate';
-    
-    if(confirm('Görsel oluşturma aşamasında bir sorun oluştu. Görseli yeni sekmede denemek ister misin?')) {
-        window.open(url, '_blank');
-    }
+    document.getElementById('ph').style.display='block';
+    document.getElementById('gbtn').disabled=false;
   };
 
-  // Yüklemeyi başlat (Browser handle eder)
-  mainImg.src = url;
+  image.src = url;
 }
 
 function saveGallery(){
-  if(!curUrl)return;
-  gallery.unshift({url:curUrl,style,p:document.getElementById('prompt').value});
-  const g=document.getElementById('gg');
-  g.innerHTML=gallery.map((x,i)=>`
-    <div class="gi" onclick="window.open('${x.url}','_blank')" title="${x.p}">
-      <img src="${x.url}" loading="lazy">
-      <span class="gi-badge">${x.style}</span>
-    </div>`).join('');
+  if(!curUrl) return;
+  gallery.push(curUrl);
+  document.getElementById('gg').innerHTML = gallery.map(src=>`<div class="gi"><img src="${src}"></div>`).join('');
 }
+</script>
+</body>
+</html>
