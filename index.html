@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArtForge AI</title>
+<title>ArtForge AI - Pro</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#0a0a0a;--s1:#111;--s2:#1a1a1a;--s3:#242424;--border:#2e2e2e;--border2:#444;--text:#f0f0f0;--mid:#888;--dim:#444;--white:#fff;}
@@ -47,7 +47,7 @@
   .gbtn:disabled{background:var(--s3);color:var(--dim);cursor:not-allowed;}
 
   /* RESULT */
-  .result{background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;min-height:280px;display:flex;align-items:center;justify-content:center;}
+  .result{background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
 
   .ph{text-align:center;padding:48px;color:var(--dim);}
   .ph-icon{font-size:44px;opacity:.2;display:block;margin-bottom:10px;}
@@ -59,10 +59,9 @@
   .spin-txt{font-family:'Space Mono',monospace;font-size:10px;color:var(--mid);letter-spacing:1px;}
   .spin-sub{font-size:11px;color:var(--dim);margin-top:6px;}
 
-  /* IMAGE — direkt göster */
   .img-wrap{display:none;width:100%;}
   .img-wrap.on{display:block;}
-  .img-wrap img{width:100%;display:block;border-radius:0;}
+  .img-wrap img{width:100%;display:block;border-radius:0;background:var(--s2);}
   .img-actions{display:flex;gap:1px;border-top:1px solid var(--border);}
   .iact{flex:1;padding:12px;background:var(--s2);border:none;color:var(--mid);font-size:12px;cursor:pointer;transition:all .15s;text-decoration:none;text-align:center;display:block;font-family:'Inter',sans-serif;}
   .iact:hover{background:var(--s3);color:var(--white);}
@@ -135,7 +134,7 @@
       <div class="spin-sub" id="ssub">Turbo ~10sn • Flux ~40sn</div>
     </div>
     <div class="img-wrap" id="imgWrap">
-      <img id="img" alt="generated">
+      <img id="img" alt="generated" crossorigin="anonymous">
       <div class="img-actions">
         <a id="dlBtn" class="iact" target="_blank">↗ Tam Boyut Aç</a>
         <button class="iact" onclick="saveGallery()">⊞ Galeriye Ekle</button>
@@ -148,6 +147,7 @@
   <div class="gg" id="gg"><div class="ge">— henüz görsel yok —</div></div>
 
 </div>
+
 <script>
 const S={
   fantasy:'fantasy RPG game item, hand painted, detailed, magical glow, concept art',
@@ -164,12 +164,14 @@ function renderTags(s){
   document.getElementById('tagsWrap').innerHTML=
     TAGS[s].map(t=>`<span class="tag" onclick="addTag('${t.toLowerCase()}')">${t}</span>`).join('');
 }
+
 function setStyle(s){
   style=s;
   document.getElementById('tabF').className='tab'+(s==='fantasy'?' active':'');
   document.getElementById('tabA').className='tab'+(s==='anime'?' active':'');
   renderTags(s);
 }
+
 function addTag(v){
   const el=document.getElementById('prompt');
   el.value=el.value?el.value+', '+v:v;
@@ -186,62 +188,63 @@ function gen(){
   const m=document.getElementById('model').value;
   const seed=Math.floor(Math.random()*999999);
 
-  // Kısa prompt — özel karaktersiz
+  // Pollinations API URL
   const full=S[style]+', '+p+', white background, no text, no watermark';
-  const enc=encodeURIComponent(full);
-  const url=`https://image.pollinations.ai/prompt/${enc}?width=${sz[0]}&height=${sz[1]}&model=${m}&seed=${seed}&nologo=true`;
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(full)}?width=${sz[0]}&height=${sz[1]}&model=${m}&seed=${seed}&nologo=true`;
 
-  curUrl=url;
-
-  // UI
+  // UI Durumunu Güncelle
   document.getElementById('ph').style.display='none';
-  document.getElementById('imgWrap').className='img-wrap';
-  document.getElementById('loading').className='loading on';
+  document.getElementById('imgWrap').classList.remove('on');
+  document.getElementById('loading').classList.add('on');
   document.getElementById('gbtn').disabled=true;
   document.getElementById('gbtn').textContent='Generating...';
 
-  const msgs=[
-    ['GENERATING...','Bekle...'],
-    ['AI çiziyor...','Neredeyse...'],
-    ['Son rötuşlar...','Az kaldı!']
-  ];
+  // Yükleme mesajları döngüsü
+  const msgs=[['ÇİZİLİYOR...','Yapay zeka fırçasını hazırlıyor...'],['HESAPLANIYOR...','Piksel sanatı işleniyor...'],['NEREDEYSE BİTTİ...','Son ışıklandırmalar ekleniyor...']];
   let mi=0;
   clearInterval(window._mt);
   window._mt=setInterval(()=>{
     const x=msgs[mi++%msgs.length];
     document.getElementById('stxt').textContent=x[0];
     document.getElementById('ssub').textContent=x[1];
-  },4000);
+  },3500);
 
-  // Direkt img src — en basit yöntem
-  const img=document.getElementById('img');
-  img.onload=()=>{
+  // GÖRSEL YÜKLEME MANTIĞI (DÜZELTİLEN KISIM)
+  const tempImg = new Image();
+  
+  // Önce arka planda yükle
+  tempImg.onload = function() {
     clearInterval(window._mt);
-    document.getElementById('loading').className='loading';
-    document.getElementById('imgWrap').className='img-wrap on';
-    document.getElementById('dlBtn').href=url;
-    document.getElementById('gbtn').disabled=false;
-    document.getElementById('gbtn').textContent='Generate';
-    // result div'i otomatik büyüsün
-    document.getElementById('result').style.minHeight='auto';
-    document.getElementById('result').style.display='block';
+    const mainImg = document.getElementById('img');
+    mainImg.src = url; // Gerçek imajı ata
+    curUrl = url;
+    
+    document.getElementById('loading').classList.remove('on');
+    document.getElementById('imgWrap').classList.add('on');
+    document.getElementById('dlBtn').href = url;
+    document.getElementById('gbtn').disabled = false;
+    document.getElementById('gbtn').textContent = 'Generate';
+    document.getElementById('result').style.minHeight = 'auto';
   };
-  img.onerror=()=>{
+
+  tempImg.onerror = function() {
     clearInterval(window._mt);
-    document.getElementById('loading').className='loading';
-    document.getElementById('gbtn').disabled=false;
-    document.getElementById('gbtn').textContent='Generate';
-    // Hata — direkt linki aç
-    if(confirm('Görsel yüklenemedi. Yeni sekmede açmak ister misin?')){
-      window.open(url,'_blank');
-    }
+    alert('Görsel oluşturulurken bir hata oluştu. Lütfen tekrar dene.');
+    document.getElementById('loading').classList.remove('on');
+    document.getElementById('ph').style.display = 'block';
+    document.getElementById('gbtn').disabled = false;
+    document.getElementById('gbtn').textContent = 'Generate';
   };
-  img.src=url;
+
+  // Yüklemeyi başlat
+  tempImg.src = url;
 }
 
 function saveGallery(){
   if(!curUrl)return;
-  gallery.push({url:curUrl,style,p:document.getElementById('prompt').value});
+  gallery.unshift({url:curUrl,style,p:document.getElementById('prompt').value});
+  if(gallery.length > 12) gallery.pop(); // Galeri limiti
+  
   const g=document.getElementById('gg');
   g.innerHTML=gallery.map((x,i)=>`
     <div class="gi" onclick="window.open('${x.url}','_blank')" title="${x.p}">
