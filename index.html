@@ -4,809 +4,255 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ArtForge AI</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:       #0a0a0a;
-    --s1:       #111111;
-    --s2:       #1a1a1a;
-    --s3:       #242424;
-    --border:   #2e2e2e;
-    --border2:  #3a3a3a;
-    --text:     #f0f0f0;
-    --text-mid: #888888;
-    --text-dim: #444444;
-    --white:    #ffffff;
-    --accent:   #ffffff;
-    --accent-dim: rgba(255,255,255,0.08);
-  }
+  :root{--bg:#0a0a0a;--s1:#111;--s2:#1a1a1a;--s3:#242424;--border:#2e2e2e;--border2:#444;--text:#f0f0f0;--mid:#888;--dim:#444;--white:#fff;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 20px 80px;}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* HEADER */
+  .header{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:32px;}
+  .logo{width:40px;height:40px;background:var(--white);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  h1{font-family:'Space Mono',monospace;font-size:20px;color:var(--white);}
+  .sub{font-size:11px;color:var(--mid);margin-top:2px;}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    line-height: 1.6;
-  }
+  /* TABS */
+  .tabs{display:flex;gap:1px;background:var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+  .tab{flex:1;padding:13px;background:var(--s1);border:none;cursor:pointer;transition:background .2s;text-align:center;color:var(--mid);}
+  .tab .ti{font-size:20px;display:block;margin-bottom:3px;}
+  .tab .tn{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;transition:color .2s;}
+  .tab.active{background:var(--s3);}
+  .tab.active .tn{color:var(--white);}
 
-  /* Subtle grid bg */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+  /* CARD */
+  .card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+  .clbl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;}
 
-  .wrapper {
-    position: relative;
-    z-index: 1;
-    max-width: 840px;
-    margin: 0 auto;
-    padding: 48px 24px 96px;
-  }
+  /* TAGS */
+  .tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+  .tag{background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;color:var(--mid);transition:all .15s;}
+  .tag:hover{border-color:var(--border2);color:var(--white);}
 
-  /* ── HEADER ── */
-  header {
-    margin-bottom: 56px;
-    animation: fadeDown 0.6s ease both;
-  }
-  .header-inner {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 24px;
-  }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .brand-mark {
-    width: 42px;
-    height: 42px;
-    background: var(--white);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
-  }
-  .brand-text h1 {
-    font-family: 'Space Mono', monospace;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--white);
-    letter-spacing: -0.5px;
-  }
-  .brand-text p {
-    font-size: 12px;
-    color: var(--text-mid);
-    letter-spacing: 0.5px;
-    margin-top: 2px;
-  }
-  .header-tag {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
+  textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;resize:none;min-height:72px;outline:none;line-height:1.5;}
+  textarea:focus{border-color:var(--border2);}
+  textarea::placeholder{color:var(--dim);}
 
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+  .opt label{display:block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:5px;font-family:'Space Mono',monospace;}
+  select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;cursor:pointer;}
 
-  /* ── SECTION LABEL ── */
-  .sec-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 10px;
-  }
+  .gbtn{width:100%;margin-top:14px;padding:14px;border-radius:8px;border:none;background:var(--white);color:var(--bg);font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+  .gbtn:hover{background:#ddd;}
+  .gbtn:disabled{background:var(--s3);color:var(--dim);cursor:not-allowed;}
 
-  /* ── API KEY ── */
-  .api-section {
-    background: var(--s1);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 22px;
-    margin-bottom: 20px;
-    animation: fadeUp 0.5s 0.1s ease both;
-  }
-  .api-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  .api-row input {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 11px 14px;
-    color: var(--text);
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .api-row input:focus {
-    border-color: var(--border2);
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
-  }
-  .api-hint {
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: 8px;
-  }
-  .api-hint a {
-    color: var(--text-mid);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .api-hint a:hover { color: var(--white); }
+  /* RESULT */
+  .result{background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;min-height:280px;display:flex;align-items:center;justify-content:center;}
 
-  /* ── STYLE TOGGLE ── */
-  .style-row {
-    display: flex;
-    gap: 1px;
-    background: var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    animation: fadeUp 0.5s 0.15s ease both;
-  }
-  .style-tab {
-    flex: 1;
-    padding: 14px;
-    background: var(--s1);
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    text-align: center;
-  }
-  .style-tab .tab-icon { font-size: 22px; display: block; margin-bottom: 4px; }
-  .style-tab .tab-name {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text-mid);
-    transition: color 0.2s;
-  }
-  .style-tab .tab-sub {
-    font-size: 10px;
-    color: var(--text-dim);
-    margin-top: 2px;
-  }
-  .style-tab.active {
-    background: var(--s3);
-  }
-  .style-tab.active .tab-name {
-    color: var(--white);
-  }
-  .style-tab:hover:not(.active) {
-    background: var(--s2);
-  }
+  .ph{text-align:center;padding:48px;color:var(--dim);}
+  .ph-icon{font-size:44px;opacity:.2;display:block;margin-bottom:10px;}
 
-  /* ── PROMPT CARD ── */
-  .prompt-card {
-    background: var(--s1);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 22px;
-    margin-bottom: 20px;
-    animation: fadeUp 0.5s 0.2s ease both;
-  }
-  .prompt-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-  }
-  .ctrl-hint {
-    font-size: 10px;
-    color: var(--text-dim);
-    font-family: 'Space Mono', monospace;
-    background: var(--s3);
-    border: 1px solid var(--border);
-    padding: 3px 8px;
-    border-radius: 4px;
-  }
+  .loading{text-align:center;padding:48px;display:none;}
+  .loading.on{display:block;}
+  .spin{width:44px;height:44px;border:2px solid var(--border);border-top-color:var(--white);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spin-txt{font-family:'Space Mono',monospace;font-size:10px;color:var(--mid);letter-spacing:1px;}
+  .spin-sub{font-size:11px;color:var(--dim);margin-top:6px;}
 
-  .tags-wrap {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-  .tag {
-    background: var(--s3);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 4px 11px;
-    font-size: 11px;
-    cursor: pointer;
-    color: var(--text-mid);
-    transition: all 0.15s;
-    font-family: 'Inter', sans-serif;
-  }
-  .tag:hover {
-    background: var(--accent-dim);
-    border-color: var(--border2);
-    color: var(--white);
-  }
+  /* IMAGE — direkt göster */
+  .img-wrap{display:none;width:100%;}
+  .img-wrap.on{display:block;}
+  .img-wrap img{width:100%;display:block;border-radius:0;}
+  .img-actions{display:flex;gap:1px;border-top:1px solid var(--border);}
+  .iact{flex:1;padding:12px;background:var(--s2);border:none;color:var(--mid);font-size:12px;cursor:pointer;transition:all .15s;text-decoration:none;text-align:center;display:block;font-family:'Inter',sans-serif;}
+  .iact:hover{background:var(--s3);color:var(--white);}
 
-  .prompt-input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 13px 15px;
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    resize: none;
-    min-height: 80px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    line-height: 1.5;
-  }
-  .prompt-input:focus {
-    border-color: var(--border2);
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.05);
-  }
-  .prompt-input::placeholder { color: var(--text-dim); }
+  /* GALLERY */
+  .gh{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .gh span{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);}
+  .gh::after{content:'';flex:1;height:1px;background:var(--border);}
+  .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
+  .gi{aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:all .2s;background:var(--s2);position:relative;}
+  .gi:hover{border-color:var(--border2);transform:scale(1.02);}
+  .gi img{width:100%;height:100%;object-fit:cover;}
+  .gi-badge{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.8);border-radius:3px;padding:2px 6px;font-size:8px;font-family:'Space Mono',monospace;text-transform:uppercase;color:var(--mid);}
+  .ge{grid-column:1/-1;text-align:center;color:var(--dim);font-size:11px;padding:24px;font-family:'Space Mono',monospace;}
 
-  .options-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 14px;
-  }
-  .opt-block label {
-    display: block;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 6px;
-    font-family: 'Space Mono', monospace;
-  }
-  .gen-select {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-  }
-  .gen-select:focus { border-color: var(--border2); }
-
-  /* ── GENERATE BUTTON ── */
-  .gen-btn {
-    width: 100%;
-    margin-top: 16px;
-    padding: 15px;
-    border-radius: 8px;
-    border: none;
-    background: var(--white);
-    color: var(--bg);
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .gen-btn:hover {
-    background: #e0e0e0;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 24px rgba(255,255,255,0.1);
-  }
-  .gen-btn:active { transform: translateY(0); }
-  .gen-btn:disabled {
-    background: var(--s3);
-    color: var(--text-dim);
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-
-  /* ── ERROR ── */
-  .error-box {
-    margin-top: 12px;
-    background: rgba(255,80,80,0.07);
-    border: 1px solid rgba(255,80,80,0.2);
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-size: 13px;
-    color: #ff7070;
-    display: none;
-  }
-  .error-box.on { display: block; }
-
-  /* ── RESULT ── */
-  .result-card {
-    background: var(--s1);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    min-height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-    overflow: hidden;
-    position: relative;
-    animation: fadeUp 0.5s 0.25s ease both;
-  }
-
-  .r-placeholder {
-    text-align: center;
-    padding: 48px;
-    color: var(--text-dim);
-  }
-  .r-placeholder .r-icon {
-    font-size: 48px;
-    display: block;
-    margin-bottom: 12px;
-    opacity: 0.3;
-    filter: grayscale(1);
-  }
-  .r-placeholder p { font-size: 13px; }
-
-  .r-loader {
-    display: none;
-    text-align: center;
-    padding: 48px;
-  }
-  .r-loader.on { display: block; }
-  .r-spinner {
-    width: 48px;
-    height: 48px;
-    border: 2px solid var(--border);
-    border-top-color: var(--white);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 16px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .r-loader-text {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--text-mid);
-    letter-spacing: 1px;
-    animation: blink 1.5s ease-in-out infinite;
-  }
-  @keyframes blink { 0%,100%{opacity:0.4} 50%{opacity:1} }
-
-  .r-result { display: none; width: 100%; }
-  .r-result.on { display: block; }
-  .r-result img {
-    width: 100%;
-    display: block;
-    border-radius: 0;
-  }
-  .r-actions {
-    display: flex;
-    gap: 1px;
-    background: var(--border);
-    border-top: 1px solid var(--border);
-  }
-  .r-action-btn {
-    flex: 1;
-    padding: 12px;
-    background: var(--s2);
-    border: none;
-    color: var(--text-mid);
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
-    text-decoration: none;
-    text-align: center;
-    display: block;
-  }
-  .r-action-btn:hover {
-    background: var(--s3);
-    color: var(--white);
-  }
-
-  /* ── GALLERY ── */
-  .gallery-section { animation: fadeUp 0.5s 0.3s ease both; }
-  .gallery-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-  .gallery-header span {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--text-dim);
-  }
-  .gallery-header::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 8px;
-  }
-  .g-item {
-    aspect-ratio: 1;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    background: var(--s2);
-  }
-  .g-item:hover {
-    border-color: var(--border2);
-    transform: scale(1.02);
-  }
-  .g-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .g-badge {
-    position: absolute;
-    top: 6px;
-    left: 6px;
-    background: rgba(0,0,0,0.75);
-    border-radius: 4px;
-    padding: 2px 7px;
-    font-size: 9px;
-    font-family: 'Space Mono', monospace;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--text-mid);
-    backdrop-filter: blur(6px);
-  }
-  .g-empty {
-    grid-column: 1/-1;
-    text-align: center;
-    color: var(--text-dim);
-    font-size: 12px;
-    padding: 28px;
-    font-family: 'Space Mono', monospace;
-    letter-spacing: 1px;
-  }
-
-  /* scrollbar */
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-
-  @media (max-width: 520px) {
-    .options-row { grid-template-columns: 1fr; }
-    .header-tag { display: none; }
-  }
+  @media(max-width:480px){.opts{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="wrapper">
-
-  <!-- HEADER -->
-  <header>
-    <div class="header-inner">
-      <div class="brand">
-        <div class="brand-mark">🎨</div>
-        <div class="brand-text">
-          <h1>ArtForge AI</h1>
-          <p>Fantasy &amp; Anime Item Generator</p>
-        </div>
-      </div>
-      <div class="header-tag">v1.0 / HF</div>
-    </div>
-  </header>
-
-  <!-- API KEY -->
-  <div class="api-section">
-    <div class="sec-label">Hugging Face API Key</div>
-    <div class="api-row">
-      <input type="password" id="apiKey" placeholder="hf_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
-    </div>
-    <div class="api-hint">
-      Anahtarın yok mu? →
-      <a href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co/settings/tokens</a>
-      (ücretsiz)
+  <div class="header">
+    <div class="logo">🎨</div>
+    <div>
+      <h1>ArtForge AI</h1>
+      <div class="sub">Fantasy &amp; Anime Generator — Ücretsiz</div>
     </div>
   </div>
 
-  <!-- STYLE TABS -->
-  <div class="style-row">
-    <button class="style-tab active" id="tabFantasy" onclick="setStyle('fantasy')">
-      <span class="tab-icon">⚗️</span>
-      <div class="tab-name">Fantasy</div>
-      <div class="tab-sub">Item illüstrasyon</div>
+  <div class="tabs">
+    <button class="tab active" id="tabF" onclick="setStyle('fantasy')">
+      <span class="ti">⚗️</span><div class="tn">Fantasy</div>
     </button>
-    <button class="style-tab" id="tabAnime" onclick="setStyle('anime')">
-      <span class="tab-icon">🌸</span>
-      <div class="tab-name">Anime</div>
-      <div class="tab-sub">Anime tarzı</div>
+    <button class="tab" id="tabA" onclick="setStyle('anime')">
+      <span class="ti">🌸</span><div class="tn">Anime</div>
     </button>
   </div>
 
-  <!-- PROMPT CARD -->
-  <div class="prompt-card">
-    <div class="prompt-header">
-      <div class="sec-label" style="margin:0">Prompt</div>
-      <span class="ctrl-hint">Ctrl+Enter → Üret</span>
-    </div>
-
-    <div class="tags-wrap" id="tagsWrap">
-      <!-- filled by JS -->
-    </div>
-
-    <textarea class="prompt-input" id="promptInput" rows="3" placeholder="Örnek: glowing blue mana potion with swirling smoke..."></textarea>
-
-    <div class="options-row">
-      <div class="opt-block">
+  <div class="card">
+    <div class="clbl">Prompt</div>
+    <div class="tags" id="tagsWrap"></div>
+    <textarea id="prompt" rows="3" placeholder="Örnek: glowing red fire sword..."></textarea>
+    <div class="opts">
+      <div class="opt">
         <label>Boyut</label>
-        <select class="gen-select" id="sizeSelect">
-          <option value="512x512">512 × 512 — Hızlı</option>
-          <option value="768x768">768 × 768 — Kaliteli</option>
-          <option value="512x768">512 × 768 — Portre</option>
+        <select id="size">
+          <option value="512x512">512×512 — Hızlı</option>
+          <option value="768x768">768×768 — Kaliteli</option>
         </select>
       </div>
-      <div class="opt-block">
-        <label>Kalite (steps)</label>
-        <select class="gen-select" id="stepsSelect">
-          <option value="20">20 — Hızlı</option>
-          <option value="30" selected>30 — Dengeli</option>
-          <option value="50">50 — Yüksek</option>
+      <div class="opt">
+        <label>Model</label>
+        <select id="model">
+          <option value="turbo">Turbo ⚡ Hızlı</option>
+          <option value="flux">Flux ✨ Kaliteli</option>
         </select>
       </div>
     </div>
-
-    <button class="gen-btn" id="genBtn" onclick="generate()">Generate</button>
-    <div class="error-box" id="errorBox"></div>
+    <button class="gbtn" id="gbtn" onclick="gen()">Generate</button>
   </div>
 
-  <!-- RESULT -->
-  <div class="result-card" id="resultCard">
-    <div class="r-placeholder" id="rPlaceholder">
-      <span class="r-icon">🖼</span>
-      <p>Görseliniz burada görünecek</p>
+  <div class="result" id="result">
+    <div class="ph" id="ph">
+      <span class="ph-icon">🖼</span>
+      <div>Görseliniz burada çıkacak</div>
     </div>
-    <div class="r-loader" id="rLoader">
-      <div class="r-spinner"></div>
-      <div class="r-loader-text" id="rLoaderText">GENERATING...</div>
+    <div class="loading" id="loading">
+      <div class="spin"></div>
+      <div class="spin-txt" id="stxt">GENERATING...</div>
+      <div class="spin-sub" id="ssub">Turbo ~10sn • Flux ~40sn</div>
     </div>
-    <div class="r-result" id="rResult">
-      <img id="rImg" alt="result">
-      <div class="r-actions">
-        <a id="rDownload" class="r-action-btn" download="artforge.png">↓ İndir</a>
-        <button class="r-action-btn" onclick="saveToGallery()">⊞ Galeriye Ekle</button>
-        <button class="r-action-btn" onclick="generate()">↻ Tekrar</button>
+    <div class="img-wrap" id="imgWrap">
+      <img id="img" alt="generated">
+      <div class="img-actions">
+        <a id="dlBtn" class="iact" target="_blank">↗ Tam Boyut Aç</a>
+        <button class="iact" onclick="saveGallery()">⊞ Galeriye Ekle</button>
+        <button class="iact" onclick="gen()">↻ Tekrar</button>
       </div>
     </div>
   </div>
 
-  <!-- GALLERY -->
-  <div class="gallery-section">
-    <div class="gallery-header"><span>Galeri</span></div>
-    <div class="gallery-grid" id="galleryGrid">
-      <div class="g-empty">— henüz görsel yok —</div>
-    </div>
-  </div>
+  <div class="gh"><span>Galeri</span></div>
+  <div class="gg" id="gg"><div class="ge">— henüz görsel yok —</div></div>
 
 </div>
-
 <script>
-  /* ── CONFIG ── */
-  const STYLES = {
-    fantasy: {
-      prefix: 'fantasy RPG game item, hand-painted illustration, detailed textures, dramatic lighting, magical glow, rich colors, concept art, 4k,',
-      suffix: ', transparent background, centered item, no text, no watermark',
-      neg:    'blurry, low quality, ugly, deformed, text, watermark, 3d render, photo',
-    },
-    anime: {
-      prefix: 'anime style illustration, vibrant colors, clean lineart, cel shading, japanese anime, detailed, beautiful,',
-      suffix: ', white background, centered item, no text, no watermark',
-      neg:    'blurry, low quality, ugly, deformed, text, watermark, realistic, western cartoon',
-    }
-  };
+const S={
+  fantasy:'fantasy RPG game item, hand painted, detailed, magical glow, concept art',
+  anime:'anime style item, vibrant colors, clean lineart, cel shading, japanese anime'
+};
+const TAGS={
+  fantasy:['Potion','Sword','Shield','Staff','Chest','Gem','Bow','Helmet','Ring','Aura'],
+  anime:['Katana','Spirit Orb','Scroll','Amulet','Crystal','Potion','Tome','Armor','Fan','Shuriken']
+};
 
-  const TAGS = {
-    fantasy: ['Potion','Sword','Shield','Staff','Chest','Dragon Egg','Gem','Bow','Helmet','Ring'],
-    anime:   ['Katana','Spirit Orb','Scroll','Sakura','Amulet','Crystal','Bento','Potion','Shuriken','Fan']
-  };
+let style='fantasy', curUrl=null, gallery=[];
 
-  const LOADER_MSGS = [
-    'GENERATING...', 'AI çizim yapıyor...', 'Büyü yapılıyor...', 'Neredeyse hazır...'
+function renderTags(s){
+  document.getElementById('tagsWrap').innerHTML=
+    TAGS[s].map(t=>`<span class="tag" onclick="addTag('${t.toLowerCase()}')">${t}</span>`).join('');
+}
+function setStyle(s){
+  style=s;
+  document.getElementById('tabF').className='tab'+(s==='fantasy'?' active':'');
+  document.getElementById('tabA').className='tab'+(s==='anime'?' active':'');
+  renderTags(s);
+}
+function addTag(v){
+  const el=document.getElementById('prompt');
+  el.value=el.value?el.value+', '+v:v;
+  el.focus();
+}
+
+renderTags('fantasy');
+
+function gen(){
+  const p=document.getElementById('prompt').value.trim();
+  if(!p){alert('Bir şey yaz! Örn: red fire sword');return;}
+
+  const sz=document.getElementById('size').value.split('x');
+  const m=document.getElementById('model').value;
+  const seed=Math.floor(Math.random()*999999);
+
+  // Kısa prompt — özel karaktersiz
+  const full=S[style]+', '+p+', white background, no text, no watermark';
+  const enc=encodeURIComponent(full);
+  const url=`https://image.pollinations.ai/prompt/${enc}?width=${sz[0]}&height=${sz[1]}&model=${m}&seed=${seed}&nologo=true`;
+
+  curUrl=url;
+
+  // UI
+  document.getElementById('ph').style.display='none';
+  document.getElementById('imgWrap').className='img-wrap';
+  document.getElementById('loading').className='loading on';
+  document.getElementById('gbtn').disabled=true;
+  document.getElementById('gbtn').textContent='Generating...';
+
+  const msgs=[
+    ['GENERATING...','Bekle...'],
+    ['AI çiziyor...','Neredeyse...'],
+    ['Son rötuşlar...','Az kaldı!']
   ];
+  let mi=0;
+  clearInterval(window._mt);
+  window._mt=setInterval(()=>{
+    const x=msgs[mi++%msgs.length];
+    document.getElementById('stxt').textContent=x[0];
+    document.getElementById('ssub').textContent=x[1];
+  },4000);
 
-  let currentStyle = 'fantasy';
-  let currentBlobUrl = null;
-  let gallery = [];
-
-  /* ── INIT ── */
-  renderTags('fantasy');
-
-  function renderTags(style) {
-    const wrap = document.getElementById('tagsWrap');
-    wrap.innerHTML = TAGS[style]
-      .map(t => `<span class="tag" onclick="addTag('${t.toLowerCase()}')">${t}</span>`)
-      .join('');
-  }
-
-  function setStyle(style) {
-    currentStyle = style;
-    document.getElementById('tabFantasy').className = 'style-tab' + (style==='fantasy' ? ' active' : '');
-    document.getElementById('tabAnime').className   = 'style-tab' + (style==='anime'   ? ' active' : '');
-    renderTags(style);
-  }
-
-  function addTag(val) {
-    const el = document.getElementById('promptInput');
-    el.value = el.value ? el.value + ', ' + val : val;
-    el.focus();
-  }
-
-  /* ── GENERATE ── */
-  async function generate() {
-    const apiKey = document.getElementById('apiKey').value.trim();
-    const prompt = document.getElementById('promptInput').value.trim();
-    const errBox = document.getElementById('errorBox');
-    errBox.className = 'error-box';
-
-    if (!apiKey) { showErr('⚠ Önce API key gir!'); return; }
-    if (!prompt)  { showErr('⚠ Prompt yaz!');       return; }
-
-    const s    = STYLES[currentStyle];
-    const size = document.getElementById('sizeSelect').value.split('x');
-    const steps = +document.getElementById('stepsSelect').value;
-    const full  = s.prefix + ' ' + prompt + s.suffix;
-
-    setLoading(true);
-
-    try {
-      const res = await fetch(
-        'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + apiKey,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            inputs: full,
-            parameters: {
-              negative_prompt: s.neg,
-              width:  +size[0],
-              height: +size[1],
-              num_inference_steps: steps,
-              guidance_scale: 7.5,
-            }
-          })
-        }
-      );
-
-      if (!res.ok) {
-        const j = await res.json().catch(()=>({}));
-        if (res.status === 503) showErr('⏳ Model uyanıyor, 20-30 sn bekle ve tekrar dene.');
-        else if (res.status === 401) showErr('❌ API key geçersiz.');
-        else showErr('❌ Hata: ' + (j.error || res.statusText));
-        setLoading(false);
-        return;
-      }
-
-      const blob = await res.blob();
-      if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
-      currentBlobUrl = URL.createObjectURL(blob);
-
-      const img = document.getElementById('rImg');
-      img.onload = () => {
-        setLoading(false);
-        document.getElementById('rPlaceholder').style.display = 'none';
-        document.getElementById('rResult').className = 'r-result on';
-        document.getElementById('rDownload').href = currentBlobUrl;
-      };
-      img.src = currentBlobUrl;
-
-    } catch(e) {
-      showErr('❌ Bağlantı hatası: ' + e.message);
-      setLoading(false);
+  // Direkt img src — en basit yöntem
+  const img=document.getElementById('img');
+  img.onload=()=>{
+    clearInterval(window._mt);
+    document.getElementById('loading').className='loading';
+    document.getElementById('imgWrap').className='img-wrap on';
+    document.getElementById('dlBtn').href=url;
+    document.getElementById('gbtn').disabled=false;
+    document.getElementById('gbtn').textContent='Generate';
+    // result div'i otomatik büyüsün
+    document.getElementById('result').style.minHeight='auto';
+    document.getElementById('result').style.display='block';
+  };
+  img.onerror=()=>{
+    clearInterval(window._mt);
+    document.getElementById('loading').className='loading';
+    document.getElementById('gbtn').disabled=false;
+    document.getElementById('gbtn').textContent='Generate';
+    // Hata — direkt linki aç
+    if(confirm('Görsel yüklenemedi. Yeni sekmede açmak ister misin?')){
+      window.open(url,'_blank');
     }
-  }
+  };
+  img.src=url;
+}
 
-  /* ── HELPERS ── */
-  function setLoading(on) {
-    const btn    = document.getElementById('genBtn');
-    const loader = document.getElementById('rLoader');
-    const result = document.getElementById('rResult');
-    const ph     = document.getElementById('rPlaceholder');
+function saveGallery(){
+  if(!curUrl)return;
+  gallery.push({url:curUrl,style,p:document.getElementById('prompt').value});
+  const g=document.getElementById('gg');
+  g.innerHTML=gallery.map((x,i)=>`
+    <div class="gi" onclick="window.open('${x.url}','_blank')" title="${x.p}">
+      <img src="${x.url}" loading="lazy">
+      <span class="gi-badge">${x.style}</span>
+    </div>`).join('');
+}
 
-    if (on) {
-      btn.disabled = true;
-      btn.textContent = 'Generating...';
-      ph.style.display = 'none';
-      result.className = 'r-result';
-      loader.className = 'r-loader on';
-
-      let i = 0;
-      window._li = setInterval(() => {
-        document.getElementById('rLoaderText').textContent = LOADER_MSGS[i++ % LOADER_MSGS.length];
-      }, 2800);
-    } else {
-      btn.disabled = false;
-      btn.textContent = 'Generate';
-      loader.className = 'r-loader';
-      clearInterval(window._li);
-    }
-  }
-
-  function showErr(msg) {
-    const b = document.getElementById('errorBox');
-    b.textContent = msg;
-    b.className = 'error-box on';
-  }
-
-  function saveToGallery() {
-    if (!currentBlobUrl) return;
-    gallery.push({ url: currentBlobUrl, style: currentStyle, prompt: document.getElementById('promptInput').value });
-    renderGallery();
-  }
-
-  function renderGallery() {
-    const g = document.getElementById('galleryGrid');
-    if (!gallery.length) { g.innerHTML = '<div class="g-empty">— henüz görsel yok —</div>'; return; }
-    g.innerHTML = gallery.map((item, i) => `
-      <div class="g-item" onclick="viewItem(${i})" title="${item.prompt}">
-        <img src="${item.url}" alt="${item.prompt}" loading="lazy">
-        <span class="g-badge">${item.style}</span>
-      </div>
-    `).join('');
-  }
-
-  function viewItem(i) {
-    const item = gallery[i];
-    document.getElementById('rImg').src = item.url;
-    document.getElementById('rDownload').href = item.url;
-    document.getElementById('rPlaceholder').style.display = 'none';
-    document.getElementById('rResult').className = 'r-result on';
-    window.scrollTo({ top: document.getElementById('resultCard').offsetTop - 20, behavior: 'smooth' });
-  }
-
-  /* ctrl+enter */
-  document.getElementById('promptInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && e.ctrlKey) generate();
-  });
+document.getElementById('prompt').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.ctrlKey)gen();
+});
 </script>
 </body>
 </html>
