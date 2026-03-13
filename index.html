@@ -3,93 +3,102 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArtForge AI - Kesin Çözüm</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<title>ArtForge AI - V3</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Space+Mono&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#0a0a0a;--s1:#111;--s2:#1a1a1a;--border:#2e2e2e;--text:#f0f0f0;--white:#fff;}
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:20px;display:flex;justify-content:center;}
-  .wrap{width:100%;max-width:500px;}
-  .card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px;}
-  h1{font-family:'Space Mono',monospace;font-size:22px;margin-bottom:20px;text-align:center;}
-  textarea{width:100%;background:#000;border:1px solid var(--border);border-radius:8px;padding:12px;color:#fff;margin-bottom:10px;resize:none;outline:none;}
-  select{width:100%;padding:10px;background:#000;color:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:10px;}
-  .gbtn{width:100%;padding:15px;border-radius:8px;border:none;background:var(--white);color:#000;font-weight:700;cursor:pointer;text-transform:uppercase;}
-  .gbtn:disabled{opacity:0.3;cursor:not-allowed;}
-  .result{min-height:300px;background:var(--s2);border:2px dashed var(--border);border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
-  #resImg{width:100%;display:none;}
-  .loading{display:none;text-align:center;}
-  .spin{width:30px;height:30px;border:3px solid #333;border-top-color:#fff;border-radius:50%;animation:s .8s linear infinite;margin:0 auto 10px;}
-  @keyframes s{to{transform:rotate(360deg)}}
+  :root { --bg: #050505; --card: #111; --border: #222; --accent: #fff; --text: #eee; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; display: flex; justify-content: center; padding: 20px; }
+  .container { width: 100%; max-width: 450px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  h1 { font-family: 'Space Mono', monospace; font-size: 24px; text-align: center; margin-bottom: 20px; letter-spacing: -1px; }
+  
+  textarea { width: 100%; background: #000; border: 1px solid var(--border); border-radius: 12px; padding: 15px; color: #fff; font-size: 14px; resize: none; outline: none; margin-bottom: 15px; transition: border 0.3s; }
+  textarea:focus { border-color: #444; }
+
+  .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--accent); color: #000; font-weight: 700; cursor: pointer; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.1s; }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .result-area { margin-top: 25px; min-height: 300px; background: #000; border: 1px solid var(--border); border-radius: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+  #outputImg { width: 100%; height: auto; display: none; }
+  
+  .loader { display: none; text-align: center; font-size: 13px; color: #888; }
+  .spin { width: 35px; height: 35px; border: 3px solid #222; border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 15px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg { color: #ff4444; font-size: 12px; margin-top: 10px; display: none; text-align: center; }
 </style>
 </head>
 <body>
 
-<div class="wrap">
+<div class="container">
   <h1>ArtForge AI</h1>
   
   <div class="card">
-    <select id="model">
-      <option value="turbo">Turbo (En Hızlı & Sorunsuz)</option>
-      <option value="flux">Flux (Kaliteli ama Yavaş/Hata verebilir)</option>
-    </select>
-    <textarea id="prompt" rows="3" placeholder="Örn: golden dragon, cinematic lighting..."></textarea>
-    <button class="gbtn" id="gbtn" onclick="generate()">GÖRSEL OLUŞTUR</button>
+    <textarea id="promptInput" rows="4" placeholder="Örn: futuristic samurai, neon lights, 8k..."></textarea>
+    <button class="btn" id="genBtn" onclick="createArt()">Görseli Oluştur</button>
+    <div id="errorMsg" class="error-msg">Görsel oluşturulamadı, lütfen tekrar dene.</div>
   </div>
 
-  <div class="result" id="resBox">
-    <div id="phText">🖼 Görsel buraya gelecek</div>
-    <div class="loading" id="loader">
+  <div class="result-area" id="resBox">
+    <div id="placeholder">✨ Sanatın burada belirecek</div>
+    <div class="loader" id="loader">
       <div class="spin"></div>
-      <p>AI çiziyor, lütfen bekle...</p>
+      <p>Yapay zeka hayal ediyor...</p>
     </div>
-    <img id="resImg" alt="AI Generated">
+    <img id="outputImg" alt="AI Generated">
   </div>
 </div>
 
 <script>
-async function generate() {
-  const promptInput = document.getElementById('prompt');
-  const btn = document.getElementById('gbtn');
-  const img = document.getElementById('resImg');
+async function createArt() {
+  const prompt = document.getElementById('promptInput').value.trim();
+  const btn = document.getElementById('genBtn');
+  const img = document.getElementById('outputImg');
   const loader = document.getElementById('loader');
-  const ph = document.getElementById('phText');
-  const model = document.getElementById('model').value;
+  const ph = document.getElementById('placeholder');
+  const error = document.getElementById('errorMsg');
 
-  if(!promptInput.value.trim()) return alert("Lütfen bir şeyler yaz!");
+  if (!prompt) {
+    alert("Boş bırakma, bir şeyler yaz!");
+    return;
+  }
 
-  // UI Güncelle
+  // Arayüzü hazırla
   btn.disabled = true;
-  btn.innerText = "OLUŞTURULUYOR...";
+  btn.innerText = "HAZIRLANIYOR...";
+  error.style.display = "none";
   ph.style.display = "none";
   img.style.display = "none";
   loader.style.display = "block";
 
-  const seed = Math.floor(Math.random() * 999999);
-  const cleanPrompt = encodeURIComponent(promptInput.value.trim());
-  const url = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=512&height=512&model=${model}&seed=${seed}&nologo=true`;
+  // Farklı bir API rotası deniyoruz (Stable Diffusion tabanlı)
+  const seed = Math.floor(Math.random() * 1000000);
+  // Bu URL yapısı daha stabildir
+  const finalPrompt = encodeURIComponent(prompt + ", high quality, masterpiece, sharp focus");
+  const url = `https://image.pollinations.ai/prompt/${finalPrompt}?seed=${seed}&width=1024&height=1024&nologo=true`;
 
-  try {
-    // Görseli arka planda kontrol et
-    const response = await fetch(url);
-    
-    if (!response.ok) throw new Error("API Hatası");
+  // Önce görseli yüklemeyi dene
+  const checkImg = new Image();
+  checkImg.src = url;
 
-    // Görsel yüklendiğinde göster
-    img.src = url;
-    img.onload = () => {
-      loader.style.display = "none";
-      img.style.display = "block";
-      btn.disabled = false;
-      btn.innerText = "GÖRSEL OLUŞTUR";
-    };
-  } catch (err) {
-    alert("Bir hata oluştu. Lütfen Turbo modelini dene.");
+  checkImg.onload = function() {
     loader.style.display = "none";
+    img.src = url;
+    img.style.display = "block";
+    btn.disabled = false;
+    btn.innerText = "Görseli Oluştur";
+  };
+
+  checkImg.onerror = function() {
+    loader.style.display = "none";
+    error.style.display = "block";
     ph.style.display = "block";
     btn.disabled = false;
-    btn.innerText = "GÖRSEL OLUŞTUR";
-  }
+    btn.innerText = "Görseli Oluştur";
+    alert("Şu an sunucular yoğun. Lütfen 5 saniye sonra tekrar bas.");
+  };
 }
 </script>
 
