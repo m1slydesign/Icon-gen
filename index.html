@@ -1,154 +1,3 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArtForge AI - Pro</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{--bg:#0a0a0a;--s1:#111;--s2:#1a1a1a;--s3:#242424;--border:#2e2e2e;--border2:#444;--text:#f0f0f0;--mid:#888;--dim:#444;--white:#fff;}
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
-  .wrap{max-width:760px;margin:0 auto;padding:40px 20px 80px;}
-
-  /* HEADER */
-  .header{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:32px;}
-  .logo{width:40px;height:40px;background:var(--white);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-  h1{font-family:'Space Mono',monospace;font-size:20px;color:var(--white);}
-  .sub{font-size:11px;color:var(--mid);margin-top:2px;}
-
-  /* TABS */
-  .tabs{display:flex;gap:1px;background:var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;}
-  .tab{flex:1;padding:13px;background:var(--s1);border:none;cursor:pointer;transition:background .2s;text-align:center;color:var(--mid);}
-  .tab .ti{font-size:20px;display:block;margin-bottom:3px;}
-  .tab .tn{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;transition:color .2s;}
-  .tab.active{background:var(--s3);}
-  .tab.active .tn{color:var(--white);}
-
-  /* CARD */
-  .card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
-  .clbl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;}
-
-  /* TAGS */
-  .tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
-  .tag{background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;color:var(--mid);transition:all .15s;}
-  .tag:hover{border-color:var(--border2);color:var(--white);}
-
-  textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;resize:none;min-height:72px;outline:none;line-height:1.5;}
-  textarea:focus{border-color:var(--border2);}
-  textarea::placeholder{color:var(--dim);}
-
-  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
-  .opt label{display:block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:5px;font-family:'Space Mono',monospace;}
-  select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;cursor:pointer;}
-
-  .gbtn{width:100%;margin-top:14px;padding:14px;border-radius:8px;border:none;background:var(--white);color:var(--bg);font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
-  .gbtn:hover{background:#ddd;}
-  .gbtn:disabled{background:var(--s3);color:var(--dim);cursor:not-allowed;}
-
-  /* RESULT */
-  .result{background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
-
-  .ph{text-align:center;padding:48px;color:var(--dim);}
-  .ph-icon{font-size:44px;opacity:.2;display:block;margin-bottom:10px;}
-
-  .loading{text-align:center;padding:48px;display:none;}
-  .loading.on{display:block;}
-  .spin{width:44px;height:44px;border:2px solid var(--border);border-top-color:var(--white);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .spin-txt{font-family:'Space Mono',monospace;font-size:10px;color:var(--mid);letter-spacing:1px;}
-  .spin-sub{font-size:11px;color:var(--dim);margin-top:6px;}
-
-  .img-wrap{display:none;width:100%;}
-  .img-wrap.on{display:block;}
-  .img-wrap img{width:100%;display:block;border-radius:0;background:var(--s2);}
-  .img-actions{display:flex;gap:1px;border-top:1px solid var(--border);}
-  .iact{flex:1;padding:12px;background:var(--s2);border:none;color:var(--mid);font-size:12px;cursor:pointer;transition:all .15s;text-decoration:none;text-align:center;display:block;font-family:'Inter',sans-serif;}
-  .iact:hover{background:var(--s3);color:var(--white);}
-
-  /* GALLERY */
-  .gh{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-  .gh span{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);}
-  .gh::after{content:'';flex:1;height:1px;background:var(--border);}
-  .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
-  .gi{aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:all .2s;background:var(--s2);position:relative;}
-  .gi:hover{border-color:var(--border2);transform:scale(1.02);}
-  .gi img{width:100%;height:100%;object-fit:cover;}
-  .gi-badge{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.8);border-radius:3px;padding:2px 6px;font-size:8px;font-family:'Space Mono',monospace;text-transform:uppercase;color:var(--mid);}
-  .ge{grid-column:1/-1;text-align:center;color:var(--dim);font-size:11px;padding:24px;font-family:'Space Mono',monospace;}
-
-  @media(max-width:480px){.opts{grid-template-columns:1fr;}}
-</style>
-</head>
-<body>
-<div class="wrap">
-
-  <div class="header">
-    <div class="logo">🎨</div>
-    <div>
-      <h1>ArtForge AI</h1>
-      <div class="sub">Fantasy &amp; Anime Generator — Ücretsiz</div>
-    </div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" id="tabF" onclick="setStyle('fantasy')">
-      <span class="ti">⚗️</span><div class="tn">Fantasy</div>
-    </button>
-    <button class="tab" id="tabA" onclick="setStyle('anime')">
-      <span class="ti">🌸</span><div class="tn">Anime</div>
-    </button>
-  </div>
-
-  <div class="card">
-    <div class="clbl">Prompt</div>
-    <div class="tags" id="tagsWrap"></div>
-    <textarea id="prompt" rows="3" placeholder="Örnek: glowing red fire sword..."></textarea>
-    <div class="opts">
-      <div class="opt">
-        <label>Boyut</label>
-        <select id="size">
-          <option value="512x512">512×512 — Hızlı</option>
-          <option value="768x768">768×768 — Kaliteli</option>
-        </select>
-      </div>
-      <div class="opt">
-        <label>Model</label>
-        <select id="model">
-          <option value="turbo">Turbo ⚡ Hızlı</option>
-          <option value="flux">Flux ✨ Kaliteli</option>
-        </select>
-      </div>
-    </div>
-    <button class="gbtn" id="gbtn" onclick="gen()">Generate</button>
-  </div>
-
-  <div class="result" id="result">
-    <div class="ph" id="ph">
-      <span class="ph-icon">🖼</span>
-      <div>Görseliniz burada çıkacak</div>
-    </div>
-    <div class="loading" id="loading">
-      <div class="spin"></div>
-      <div class="spin-txt" id="stxt">GENERATING...</div>
-      <div class="spin-sub" id="ssub">Turbo ~10sn • Flux ~40sn</div>
-    </div>
-    <div class="img-wrap" id="imgWrap">
-      <img id="img" alt="generated" crossorigin="anonymous">
-      <div class="img-actions">
-        <a id="dlBtn" class="iact" target="_blank">↗ Tam Boyut Aç</a>
-        <button class="iact" onclick="saveGallery()">⊞ Galeriye Ekle</button>
-        <button class="iact" onclick="gen()">↻ Tekrar</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="gh"><span>Galeri</span></div>
-  <div class="gg" id="gg"><div class="ge">— henüz görsel yok —</div></div>
-
-</div>
-
-<script>
 const S={
   fantasy:'fantasy RPG game item, hand painted, detailed, magical glow, concept art',
   anime:'anime style item, vibrant colors, clean lineart, cel shading, japanese anime'
@@ -181,70 +30,69 @@ function addTag(v){
 renderTags('fantasy');
 
 function gen(){
-  const p=document.getElementById('prompt').value.trim();
+  const p = document.getElementById('prompt').value.trim();
   if(!p){alert('Bir şey yaz! Örn: red fire sword');return;}
 
-  const sz=document.getElementById('size').value.split('x');
-  const m=document.getElementById('model').value;
-  const seed=Math.floor(Math.random()*999999);
+  const sz = document.getElementById('size').value.split('x');
+  const m = document.getElementById('model').value;
+  const seed = Math.floor(Math.random()*999999);
 
-  // Pollinations API URL
-  const full=S[style]+', '+p+', white background, no text, no watermark';
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(full)}?width=${sz[0]}&height=${sz[1]}&model=${m}&seed=${seed}&nologo=true`;
+  // URL oluşturma
+  const full = S[style] + ', ' + p + ', white background, no text, no watermark';
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(full)}?width=${sz[0]}&height=${sz[1]}&model=${m}&seed=${seed}&nologo=true`;
 
-  // UI Durumunu Güncelle
-  document.getElementById('ph').style.display='none';
+  // UI Hazırlığı
+  document.getElementById('ph').style.display = 'none';
   document.getElementById('imgWrap').classList.remove('on');
   document.getElementById('loading').classList.add('on');
-  document.getElementById('gbtn').disabled=true;
-  document.getElementById('gbtn').textContent='Generating...';
+  document.getElementById('gbtn').disabled = true;
+  document.getElementById('gbtn').textContent = 'Generating...';
 
-  // Yükleme mesajları döngüsü
-  const msgs=[['ÇİZİLİYOR...','Yapay zeka fırçasını hazırlıyor...'],['HESAPLANIYOR...','Piksel sanatı işleniyor...'],['NEREDEYSE BİTTİ...','Son ışıklandırmalar ekleniyor...']];
-  let mi=0;
+  // Yükleme mesajları
+  const msgs = [["ÇİZİLİYOR...", "AI fırçayı sallıyor..."], ["HESAPLANIYOR...", "Detaylar işleniyor..."], ["AZ KALDI...", "Son dokunuşlar..."]];
+  let mi = 0;
   clearInterval(window._mt);
-  window._mt=setInterval(()=>{
-    const x=msgs[mi++%msgs.length];
-    document.getElementById('stxt').textContent=x[0];
-    document.getElementById('ssub').textContent=x[1];
-  },3500);
+  window._mt = setInterval(() => {
+    const x = msgs[mi++ % msgs.length];
+    document.getElementById('stxt').textContent = x[0];
+    document.getElementById('ssub').textContent = x[1];
+  }, 4000);
 
-  // GÖRSEL YÜKLEME MANTIĞI (DÜZELTİLEN KISIM)
-  const tempImg = new Image();
+  // DOĞRUDAN YÜKLEME YÖNTEMİ
+  const mainImg = document.getElementById('img');
   
-  // Önce arka planda yükle
-  tempImg.onload = function() {
+  // Önceki resmi temizle (önemli!)
+  mainImg.src = ''; 
+  
+  mainImg.onload = function() {
     clearInterval(window._mt);
-    const mainImg = document.getElementById('img');
-    mainImg.src = url; // Gerçek imajı ata
     curUrl = url;
-    
     document.getElementById('loading').classList.remove('on');
     document.getElementById('imgWrap').classList.add('on');
     document.getElementById('dlBtn').href = url;
     document.getElementById('gbtn').disabled = false;
     document.getElementById('gbtn').textContent = 'Generate';
-    document.getElementById('result').style.minHeight = 'auto';
   };
 
-  tempImg.onerror = function() {
+  mainImg.onerror = function() {
+    // Hata durumunda alternatif: URL'yi yeni sekmede açmayı öner
     clearInterval(window._mt);
-    alert('Görsel oluşturulurken bir hata oluştu. Lütfen tekrar dene.');
     document.getElementById('loading').classList.remove('on');
-    document.getElementById('ph').style.display = 'block';
     document.getElementById('gbtn').disabled = false;
     document.getElementById('gbtn').textContent = 'Generate';
+    
+    if(confirm('Görsel oluşturma aşamasında bir sorun oluştu. Görseli yeni sekmede denemek ister misin?')) {
+        window.open(url, '_blank');
+    }
   };
 
-  // Yüklemeyi başlat
-  tempImg.src = url;
+  // Yüklemeyi başlat (Browser handle eder)
+  mainImg.src = url;
 }
 
 function saveGallery(){
   if(!curUrl)return;
   gallery.unshift({url:curUrl,style,p:document.getElementById('prompt').value});
-  if(gallery.length > 12) gallery.pop(); // Galeri limiti
-  
   const g=document.getElementById('gg');
   g.innerHTML=gallery.map((x,i)=>`
     <div class="gi" onclick="window.open('${x.url}','_blank')" title="${x.p}">
@@ -252,10 +100,3 @@ function saveGallery(){
       <span class="gi-badge">${x.style}</span>
     </div>`).join('');
 }
-
-document.getElementById('prompt').addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&e.ctrlKey)gen();
-});
-</script>
-</body>
-</html>
