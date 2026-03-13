@@ -3,154 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArtForge AI</title>
+<title>ArtForge AI - Kesin Çözüm</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#0a0a0a;--s1:#111;--s2:#1a1a1a;--s3:#242424;--border:#2e2e2e;--border2:#444;--text:#f0f0f0;--mid:#888;--dim:#444;--white:#fff;}
+  :root{--bg:#0a0a0a;--s1:#111;--s2:#1a1a1a;--border:#2e2e2e;--text:#f0f0f0;--white:#fff;}
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
-  .wrap{max-width:760px;margin:0 auto;padding:40px 20px 80px;}
-  .header{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:32px;}
-  .logo{width:40px;height:40px;background:var(--white);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-  h1{font-family:'Space Mono',monospace;font-size:20px;color:var(--white);}
-  .sub{font-size:11px;color:var(--mid);margin-top:2px;}
-  .tabs{display:flex;gap:1px;background:var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;}
-  .tab{flex:1;padding:13px;background:var(--s1);border:none;cursor:pointer;transition:background .2s;text-align:center;color:var(--mid);}
-  .tab .ti{font-size:20px;display:block;margin-bottom:3px;}
-  .tab .tn{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;}
-  .tab.active{background:var(--s3);}
-  .tab.active .tn{color:var(--white);}
-  .card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
-  .clbl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;}
-  .tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
-  .tag{background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;color:var(--mid);}
-  textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:14px;resize:none;outline:none;}
-  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
-  .opt label{display:block;font-size:9px;text-transform:uppercase;color:var(--dim);margin-bottom:5px;font-family:'Space Mono',monospace;}
-  select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px;color:var(--text);outline:none;cursor:pointer;}
-  .gbtn{width:100%;margin-top:14px;padding:14px;border-radius:8px;border:none;background:var(--white);color:var(--bg);font-family:'Space Mono',monospace;font-weight:700;cursor:pointer;}
-  .gbtn:disabled{opacity:0.5;cursor:not-allowed;}
-  .result{background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;min-height:300px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
-  .ph{text-align:center;color:var(--dim);}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:20px;display:flex;justify-content:center;}
+  .wrap{width:100%;max-width:500px;}
+  .card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px;}
+  h1{font-family:'Space Mono',monospace;font-size:22px;margin-bottom:20px;text-align:center;}
+  textarea{width:100%;background:#000;border:1px solid var(--border);border-radius:8px;padding:12px;color:#fff;margin-bottom:10px;resize:none;outline:none;}
+  select{width:100%;padding:10px;background:#000;color:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:10px;}
+  .gbtn{width:100%;padding:15px;border-radius:8px;border:none;background:var(--white);color:#000;font-weight:700;cursor:pointer;text-transform:uppercase;}
+  .gbtn:disabled{opacity:0.3;cursor:not-allowed;}
+  .result{min-height:300px;background:var(--s2);border:2px dashed var(--border);border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
+  #resImg{width:100%;display:none;}
   .loading{display:none;text-align:center;}
-  .loading.on{display:block;}
-  .spin{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--white);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .img-wrap{display:none;width:100%;}
-  .img-wrap.on{display:block;}
-  #img{width:100%;display:block;background:#000;}
-  .img-actions{display:flex;gap:1px;border-top:1px solid var(--border);}
-  .iact{flex:1;padding:12px;background:var(--s2);border:none;color:var(--mid);font-size:12px;cursor:pointer;text-decoration:none;text-align:center;}
-  .gh{display:flex;align-items:center;gap:10px;margin:20px 0 12px;}
-  .gh span{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);}
-  .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;}
-  .gi{aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--s2);}
-  .gi img{width:100%;height:100%;object-fit:cover;}
+  .spin{width:30px;height:30px;border:3px solid #333;border-top-color:#fff;border-radius:50%;animation:s .8s linear infinite;margin:0 auto 10px;}
+  @keyframes s{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
+
 <div class="wrap">
-  <div class="header">
-    <div class="logo">🎨</div>
-    <div><h1>ArtForge AI</h1><div class="sub">Hızlı Görsel Oluşturucu</div></div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" id="tabF" onclick="setStyle('fantasy')"><span class="ti">⚗️</span><div class="tn">Fantasy</div></button>
-    <button class="tab" id="tabA" onclick="setStyle('anime')"><span class="ti">🌸</span><div class="tn">Anime</div></button>
-  </div>
-
+  <h1>ArtForge AI</h1>
+  
   <div class="card">
-    <div class="clbl">Prompt</div>
-    <div id="tagsWrap" class="tags"></div>
-    <textarea id="prompt" rows="3" placeholder="Örn: magic sword, blue fire..."></textarea>
-    <div class="opts">
-      <div class="opt"><label>Boyut</label><select id="size"><option value="512x512">512x512</option><option value="1024x1024">1024x1024</option></select></div>
-      <div class="opt"><label>Model</label><select id="model"><option value="turbo">Turbo (Hızlı)</option><option value="flux">Flux (Kaliteli)</option></select></div>
-    </div>
-    <button class="gbtn" id="gbtn" onclick="gen()">GENERATE</button>
+    <select id="model">
+      <option value="turbo">Turbo (En Hızlı & Sorunsuz)</option>
+      <option value="flux">Flux (Kaliteli ama Yavaş/Hata verebilir)</option>
+    </select>
+    <textarea id="prompt" rows="3" placeholder="Örn: golden dragon, cinematic lighting..."></textarea>
+    <button class="gbtn" id="gbtn" onclick="generate()">GÖRSEL OLUŞTUR</button>
   </div>
 
-  <div class="result" id="result">
-    <div class="ph" id="ph">🖼 Görsel Hazır Değil</div>
-    <div class="loading" id="loading"><div class="spin"></div><div id="stxt">Oluşturuluyor...</div></div>
-    <div class="img-wrap" id="imgWrap">
-      <img id="img" src="" alt="">
-      <div class="img-actions">
-        <a id="dlBtn" class="iact" target="_blank">Aç</a>
-        <button class="iact" onclick="saveGallery()">Galeri</button>
-      </div>
+  <div class="result" id="resBox">
+    <div id="phText">🖼 Görsel buraya gelecek</div>
+    <div class="loading" id="loader">
+      <div class="spin"></div>
+      <p>AI çiziyor, lütfen bekle...</p>
     </div>
+    <img id="resImg" alt="AI Generated">
   </div>
-
-  <div class="gh"><span>GALERİ</span></div>
-  <div class="gg" id="gg"></div>
 </div>
 
 <script>
-const S={fantasy:'fantasy game item, detailed concept art, magical', anime:'anime style, high quality, vibrant'};
-const TAGS={fantasy:['Potion','Sword','Staff','Ring'], anime:['Katana','Scroll','Orb','Crystal']};
-let style='fantasy', curUrl='', gallery=[];
+async function generate() {
+  const promptInput = document.getElementById('prompt');
+  const btn = document.getElementById('gbtn');
+  const img = document.getElementById('resImg');
+  const loader = document.getElementById('loader');
+  const ph = document.getElementById('phText');
+  const model = document.getElementById('model').value;
 
-function renderTags(s){
-  document.getElementById('tagsWrap').innerHTML=TAGS[s].map(t=>`<span class="tag" onclick="addTag('${t}')">${t}</span>`).join('');
-}
-function setStyle(s){
-  style=s; 
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(s==='fantasy'?'tabF':'tabA').classList.add('active');
-  renderTags(s);
-}
-function addTag(t){ const p=document.getElementById('prompt'); p.value+= (p.value?', ':'')+t; }
+  if(!promptInput.value.trim()) return alert("Lütfen bir şeyler yaz!");
 
-renderTags('fantasy');
+  // UI Güncelle
+  btn.disabled = true;
+  btn.innerText = "OLUŞTURULUYOR...";
+  ph.style.display = "none";
+  img.style.display = "none";
+  loader.style.display = "block";
 
-function gen(){
-  const p=document.getElementById('prompt').value;
-  if(!p) return alert('Prompt yaz!');
-  
-  const m=document.getElementById('model').value;
-  const sz=document.getElementById('size').value.split('x');
-  const seed=Math.floor(Math.random()*1000000);
-  
-  // URL Temizleme: Boşlukları ve özel karakterleri düzeltir
-  const finalPrompt = `${S[style]}, ${p}, white background, high resolution`;
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?width=${sz[0]}&height=${sz[1]}&model=${m}&seed=${seed}&nologo=true`;
+  const seed = Math.floor(Math.random() * 999999);
+  const cleanPrompt = encodeURIComponent(promptInput.value.trim());
+  const url = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=512&height=512&model=${model}&seed=${seed}&nologo=true`;
 
-  document.getElementById('ph').style.display='none';
-  document.getElementById('imgWrap').style.display='none';
-  document.getElementById('loading').classList.add('on');
-  document.getElementById('gbtn').disabled=true;
+  try {
+    // Görseli arka planda kontrol et
+    const response = await fetch(url);
+    
+    if (!response.ok) throw new Error("API Hatası");
 
-  const image = document.getElementById('img');
-  // Önceki resmi temizle ki eskisi görünmesin
-  image.src = '';
-  
-  // Resim yüklendiğinde
-  image.onload = function() {
-    document.getElementById('loading').classList.remove('on');
-    document.getElementById('imgWrap').style.display='block';
-    document.getElementById('gbtn').disabled=false;
-    document.getElementById('dlBtn').href = url;
-    curUrl = url;
-  };
-
-  // Hata durumunda (İşte senin aldığın o 'yazı' çıkma hatasını burada yakalıyoruz)
-  image.onerror = function() {
-    alert('Hata oluştu! Model şu an yoğun olabilir. Turbo modelini denemeyi unutma.');
-    document.getElementById('loading').classList.remove('on');
-    document.getElementById('ph').style.display='block';
-    document.getElementById('gbtn').disabled=false;
-  };
-
-  image.src = url;
-}
-
-function saveGallery(){
-  if(!curUrl) return;
-  gallery.push(curUrl);
-  document.getElementById('gg').innerHTML = gallery.map(src=>`<div class="gi"><img src="${src}"></div>`).join('');
+    // Görsel yüklendiğinde göster
+    img.src = url;
+    img.onload = () => {
+      loader.style.display = "none";
+      img.style.display = "block";
+      btn.disabled = false;
+      btn.innerText = "GÖRSEL OLUŞTUR";
+    };
+  } catch (err) {
+    alert("Bir hata oluştu. Lütfen Turbo modelini dene.");
+    loader.style.display = "none";
+    ph.style.display = "block";
+    btn.disabled = false;
+    btn.innerText = "GÖRSEL OLUŞTUR";
+  }
 }
 </script>
+
 </body>
 </html>
