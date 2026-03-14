@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Icon Generator</title>
+<style>
+body{font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;background:#111;color:white}
+.container{text-align:center;padding:20px;background:#222;border-radius:12px}
+input{width:200px;padding:8px;margin:5px}
+button{padding:8px;margin:5px;cursor:pointer}
+img{margin-top:15px;width:256px;height:256px;background:#333;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>AI Icon Generator</h2>
+<input id="prompt" placeholder="Rocket icon, camera..." />
+<button onclick="generate()">Generate Icon</button>
+<img id="result" />
+<button onclick="download()">Download PNG</button>
+</div>
+
+<script>
+function generate(){
+  const prompt = document.getElementById("prompt").value;
+  const style = "minimal vector app icon, centered, soft gradient, modern UI, dribbble style";
+  const finalPrompt = style + ", " + prompt;
+
+  const url = "https://image.pollinations.ai/prompt/" + encodeURIComponent(finalPrompt) + "?width=512&height=512&seed=" + Math.floor(Math.random()*100000);
+
+  document.getElementById("result").src = url;
+}
+
+function download(){
+  const img = document.getElementById("result").src;
+  if(!img) return;
+  const a = document.createElement("a");
+  a.href = img;
+  a.download = "icon.png";
+  a.click();
+}
+</script>
+</body>
+</html>
